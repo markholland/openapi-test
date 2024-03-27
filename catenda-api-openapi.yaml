@@ -8,6 +8,7 @@ externalDocs:
 servers:
   - url: 'https://api.catenda.com/v2'
 tags:
+  - name: IFC
   - name: Label
   - name: Label Group
   - name: Member
@@ -19,6 +20,772 @@ tags:
 security:
   - Bearer: []
 paths:
+  '/projects/{project-id}/ifc/classifications':
+    get:
+      tags:
+        - IFC
+      summary: List classifications
+      operationId: getIfcClassifications
+      description: List all classification entities in a project.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/ifc-model'
+        - $ref: '#/components/parameters/ifc-revision'
+        - $ref: '#/components/parameters/ifc-page'
+        - $ref: '#/components/parameters/ifc-page-size'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ifc-entity'
+  '/projects/{project-id}/ifc/classifications/{object-id}':
+    get:
+      tags:
+        - IFC
+      summary: Get classification
+      operationId: getIfcClassification
+      description: Get a classification entity.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/classification-id'
+        - $ref: '#/components/parameters/ifc-revision'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ifc-entity'
+  '/projects/{project-id}/ifc/classifications/{object-id}/relations':
+    get:
+      tags:
+        - IFC
+      summary: Get classification relations
+      operationId: getIfcClassificationRelations
+      description: Get the relations for a classification.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/classification-id'
+        - $ref: '#/components/parameters/ifc-revision'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ifc-classification-relation'
+  '/projects/{project-id}/ifc/classification_references':
+    get:
+      tags:
+        - IFC
+      summary: List classification references
+      operationId: getIfcClassificationReferences
+      description: List all classification reference entities in a project.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/ifc-model'
+        - $ref: '#/components/parameters/ifc-revision'
+        - $ref: '#/components/parameters/ifc-page'
+        - $ref: '#/components/parameters/ifc-page-size'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ifc-entity'
+  '/projects/{project-id}/ifc/classification_references/{object-id}':
+    get:
+      tags:
+        - IFC
+      summary: Get classification reference
+      operationId: getIfcClassificationReference
+      description: Get a classification reference entity.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/classification-reference-id'
+        - $ref: '#/components/parameters/ifc-revision'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ifc-entity'
+  '/projects/{project-id}/ifc/classification_references/relations':
+    get:
+      tags:
+        - IFC
+      summary: List classification references relations
+      operationId: getIfcClassificationReferencesRelations
+      description: List the relations for all the classification references in a project.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/ifc-model'
+        - $ref: '#/components/parameters/ifc-revision'
+        - $ref: '#/components/parameters/ifc-page'
+        - $ref: '#/components/parameters/ifc-page-size'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ifc-entity'
+  '/projects/{project-id}/ifc/classification_references/{object-id}/relations':
+    get:
+      tags:
+        - IFC
+      summary: Get classification reference relations
+      operationId: getIfcClassificationReferenceRelations
+      description: Get the relations for a classification reference.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/classification-reference-id'
+        - $ref: '#/components/parameters/ifc-revision'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ifc-entity'
+  '/projects/{project-id}/ifc/groups':
+    get:
+      tags:
+        - IFC
+      summary: List groups
+      operationId: getIfcGroups
+      description: List all groups in a project.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/ifc-model'
+        - $ref: '#/components/parameters/ifc-revision'
+        - $ref: '#/components/parameters/ifc-type'
+        - $ref: '#/components/parameters/ifc-page'
+        - $ref: '#/components/parameters/ifc-page-size'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ifc-group'
+    post:
+      tags:
+        - IFC
+      summary: Query groups
+      operationId: queryIfcGroups
+      description: Query all groups in a project.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/ifc-model'
+        - $ref: '#/components/parameters/ifc-revision'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fields:
+                  type: object
+                  description: |
+                    Choose which fields are included in the result, by default all are included. Use value of 1 to include the field and 0 to exclude.
+                  additionalProperties:
+                    type: integer
+                    example: 1
+                  example:
+                    attributes.Name: 1
+                    attributes.GlobalId: 1
+                query:
+                  type: object
+                  description: The query object
+                  example:
+                    ifcType:
+                      $ifcType: IfcEntity
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ifc-group'
+  '/projects/{project-id}/ifc/groups/ifctypes':
+    get:
+      tags:
+        - IFC
+      summary: Get groups type summary
+      operationId: getIfcGroupsTypeSummary
+      description: Get the number of instances per IFC type for groups.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/ifc-model'
+        - $ref: '#/components/parameters/ifc-revision'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: integer
+  '/projects/{project-id}/ifc/groups/{object-id}':
+    get:
+      tags:
+        - IFC
+      summary: Get group
+      operationId: getIfcGroup
+      description: Get a group.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/group-id'
+        - $ref: '#/components/parameters/ifc-revision'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ifc-group'
+  '/projects/{project-id}/ifc/groups/relations':
+    get:
+      tags:
+        - IFC
+      summary: List groups relations
+      operationId: getIfcGroupsRelations
+      description: List the relations for all the groups in a project.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/ifc-model'
+        - $ref: '#/components/parameters/ifc-revision'
+        - $ref: '#/components/parameters/ifc-page'
+        - $ref: '#/components/parameters/ifc-page-size'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ifc-group-relation'
+  '/projects/{project-id}/ifc/groups/{object-id}/relations':
+    get:
+      tags:
+        - IFC
+      summary: Get group relations
+      operationId: getIfcGroupRelations
+      description: Get the relations for a group.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/group-id'
+        - $ref: '#/components/parameters/ifc-revision'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ifc-group-relation'
+  '/projects/{project-id}/ifc/layers':
+    get:
+      tags:
+        - IFC
+      summary: List layers
+      operationId: getIfcLayers
+      description: List all layers in a project.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/ifc-model'
+        - $ref: '#/components/parameters/ifc-revision'
+        - $ref: '#/components/parameters/ifc-type'
+        - $ref: '#/components/parameters/ifc-page'
+        - $ref: '#/components/parameters/ifc-page-size'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ifc-layer'
+    post:
+      tags:
+        - IFC
+      summary: Query layers
+      operationId: queryIfcLayers
+      description: Query all layers in a project.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/ifc-model'
+        - $ref: '#/components/parameters/ifc-revision'
+        - $ref: '#/components/parameters/ifc-page'
+        - $ref: '#/components/parameters/ifc-page-size'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fields:
+                  type: object
+                  description: |
+                    Choose which fields are included in the result, by default all are included. Use value of 1 to include the field and 0 to exclude.
+                  additionalProperties:
+                    type: integer
+                    example: 1
+                  example:
+                    attributes.Name: 1
+                    attributes.GlobalId: 1
+                query:
+                  type: object
+                  description: The query object
+                  example:
+                    ifcType:
+                      $ifcType: IfcEntity
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ifc-layer'
+  '/projects/{project-id}/ifc/layers/ifctypes':
+    get:
+      tags:
+        - IFC
+      summary: Get layers type summary
+      operationId: getIfcLayersTypeSummary
+      description: Get the number of instances per IFC type for layers.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/ifc-model'
+        - $ref: '#/components/parameters/ifc-revision'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: integer
+  '/projects/{project-id}/ifc/layers/{object-id}':
+    get:
+      tags:
+        - IFC
+      summary: Get layer
+      operationId: getIfcLayer
+      description: Get a layer.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/layer-id'
+        - $ref: '#/components/parameters/ifc-revision'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ifc-layer'
+  '/projects/{project-id}/ifc/layers/relations':
+    get:
+      tags:
+        - IFC
+      summary: List layers relations
+      operationId: getIfcLayersRelations
+      description: List the relations for all the layers in a project.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/ifc-model'
+        - $ref: '#/components/parameters/ifc-revision'
+        - $ref: '#/components/parameters/ifc-page'
+        - $ref: '#/components/parameters/ifc-page-size'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ifc-layer-relation'
+  '/projects/{project-id}/ifc/layers/{object-id}/relations':
+    get:
+      tags:
+        - IFC
+      summary: Get layer relations
+      operationId: getIfcLayerRelations
+      description: Get the relations for a layer.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/layer-id'
+        - $ref: '#/components/parameters/ifc-revision'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ifc-layer-relation'
+  '/projects/{project-id}/ifc/ownerhistory':
+    get:
+      tags:
+        - IFC
+      summary: List owner histories
+      operationId: getIfcOwnerHistories
+      description: List all owner history entities in a project.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/ifc-model'
+        - $ref: '#/components/parameters/ifc-revision'
+        - $ref: '#/components/parameters/ifc-page'
+        - $ref: '#/components/parameters/ifc-page-size'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ifc-entity'
+  '/projects/{project-id}/ifc/ownerhistory/{object-id}':
+    get:
+      tags:
+        - IFC
+      summary: Get owner history
+      operationId: getIfcOwnerHistory
+      description: Get an owner history entity.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/owner-history-id'
+        - $ref: '#/components/parameters/ifc-revision'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ifc-entity'
+  '/projects/{project-id}/ifc/products':
+    get:
+      tags:
+        - IFC
+      summary: List products
+      operationId: getIfcProducts
+      description: List all products in a project.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/ifc-model'
+        - $ref: '#/components/parameters/ifc-revision'
+        - $ref: '#/components/parameters/ifc-type'
+        - $ref: '#/components/parameters/ifc-page'
+        - $ref: '#/components/parameters/ifc-page-size'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ifc-product'
+    post:
+      tags:
+        - IFC
+      summary: Query products
+      operationId: queryIfcProducts
+      description: Query all products in a project.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/ifc-model'
+        - $ref: '#/components/parameters/ifc-revision'
+        - $ref: '#/components/parameters/ifc-page'
+        - $ref: '#/components/parameters/ifc-page-size'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fields:
+                  type: object
+                  description: |
+                    Choose which fields are included in the result, by default all are included. Use value of 1 to include the field and 0 to exclude.
+                  additionalProperties:
+                    type: integer
+                    example: 1
+                  example:
+                    attributes.Name: 1
+                    attributes.GlobalId: 1
+                query:
+                  type: object
+                  description: The query object
+                  example:
+                    ifcType:
+                      $ifcType: IfcEntity
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ifc-product'
+  '/projects/{project-id}/ifc/products/ifctypes':
+    get:
+      tags:
+        - IFC
+      summary: Get products type summary
+      operationId: getIfcProductsTypeSummary
+      description: Get the number of instances per IFC type for products.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/ifc-model'
+        - $ref: '#/components/parameters/ifc-revision'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: integer
+  '/projects/{project-id}/ifc/products/{object-id}':
+    get:
+      tags:
+        - IFC
+      summary: Get product
+      operationId: getIfcProduct
+      description: Get a product.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/product-id'
+        - $ref: '#/components/parameters/ifc-revision'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ifc-product'
+  '/projects/{project-id}/ifc/products/relations':
+    get:
+      tags:
+        - IFC
+      summary: List products relations
+      operationId: getIfcProductsRelations
+      description: List the relations for all the products in a project.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/ifc-model'
+        - $ref: '#/components/parameters/ifc-revision'
+        - $ref: '#/components/parameters/ifc-page'
+        - $ref: '#/components/parameters/ifc-page-size'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ifc-product-relation'
+  '/projects/{project-id}/ifc/products/{object-id}/relations':
+    get:
+      tags:
+        - IFC
+      summary: Get product relations
+      operationId: getIfcProductRelations
+      description: Get the relations for a product.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/product-id'
+        - $ref: '#/components/parameters/ifc-revision'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ifc-product-relation'
+  '/projects/{project-id}/ifc/types':
+    get:
+      tags:
+        - IFC
+      summary: List types
+      operationId: getIfcTypes
+      description: List all types in a project.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/ifc-model'
+        - $ref: '#/components/parameters/ifc-revision'
+        - $ref: '#/components/parameters/ifc-type'
+        - $ref: '#/components/parameters/ifc-page'
+        - $ref: '#/components/parameters/ifc-page-size'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ifc-type'
+    post:
+      tags:
+        - IFC
+      summary: Query types
+      operationId: queryIfcTypes
+      description: Query all types in a project.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/ifc-model'
+        - $ref: '#/components/parameters/ifc-revision'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fields:
+                  type: object
+                  description: |
+                    Choose which fields are included in the result, by default all are included. Use value of 1 to include the field and 0 to exclude.
+                  additionalProperties:
+                    type: integer
+                    example: 1
+                  example:
+                    attributes.Name: 1
+                    attributes.GlobalId: 1
+                query:
+                  type: object
+                  description: The query object
+                  example:
+                    ifcType:
+                      $ifcType: IfcEntity
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ifc-type'
+  '/projects/{project-id}/ifc/types/ifctypes':
+    get:
+      tags:
+        - IFC
+      summary: Get types type summary
+      operationId: getIfcTypesTypeSummary
+      description: Get the number of instances per IFC type for types.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/ifc-model'
+        - $ref: '#/components/parameters/ifc-revision'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: integer
+  '/projects/{project-id}/ifc/types/{object-id}':
+    get:
+      tags:
+        - IFC
+      summary: Get type
+      operationId: getIfcType
+      description: Get a type.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/type-id'
+        - $ref: '#/components/parameters/ifc-revision'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ifc-type'
+  '/projects/{project-id}/ifc/types/relations':
+    get:
+      tags:
+        - IFC
+      summary: List types relations
+      operationId: getIfcTypesRelations
+      description: List the relations for all the types in a project.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/ifc-model'
+        - $ref: '#/components/parameters/ifc-revision'
+        - $ref: '#/components/parameters/ifc-page'
+        - $ref: '#/components/parameters/ifc-page-size'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ifc-type-relation'
+  '/projects/{project-id}/ifc/types/{object-id}/relations':
+    get:
+      tags:
+        - IFC
+      summary: Get type relations
+      operationId: getIfcTypeRelations
+      description: Get the relations for a type.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/type-id'
+        - $ref: '#/components/parameters/ifc-revision'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ifc-type-relation'
   '/projects/{project-id}/labels':
     get:
       tags:
@@ -543,7 +1310,7 @@ paths:
                 description: |
                   Pass a URI to be notified when the revision is processed.
 
-                  Catenda will issue an HTTP GET request with the query parameter token set to revision status Id and result set to either 'success' or 'error'.
+                  Catenda will issue an HTTP GET request with the query parameter token set to revision status id and result set to either 'success' or 'error'.
                 example: 'https://example.com'
               comment:
                 type: string
@@ -1137,6 +1904,30 @@ paths:
           $ref: '#/components/responses/204'
 components:
   parameters:
+    classification-id:
+      name: object-id
+      in: path
+      required: true
+      description: Object id of the classification
+      schema:
+        type: integer
+        format: int64
+    classification-reference-id:
+      name: object-id
+      in: path
+      required: true
+      description: Object id of the classification reference
+      schema:
+        type: integer
+        format: int64
+    group-id:
+      name: object-id
+      in: path
+      required: true
+      description: Object id of the group
+      schema:
+        type: integer
+        format: int64
     label-group-id:
       name: label-group-id
       in: path
@@ -1151,6 +1942,14 @@ components:
       description: Id of label
       schema:
         type: string
+    layer-id:
+      name: object-id
+      in: path
+      required: true
+      description: Object id of the layer
+      schema:
+        type: integer
+        format: int64
     model-id:
       name: model-id
       in: path
@@ -1179,6 +1978,22 @@ components:
       description: Id of the organization
       schema:
         type: string
+    owner-history-id:
+      name: object-id
+      in: path
+      required: true
+      description: Object id of the owner history
+      schema:
+        type: integer
+        format: int64
+    product-id:
+      name: object-id
+      in: path
+      required: true
+      description: Object id of the product
+      schema:
+        type: integer
+        format: int64
     project-id:
       name: project-id
       in: path
@@ -1193,11 +2008,53 @@ components:
       description: Id of the team
       schema:
         type: string
+    type-id:
+      name: object-id
+      in: path
+      required: true
+      description: Object id of the type
+      schema:
+        type: integer
+        format: int64
     user-id:
       name: user-id
       in: path
       required: true
       description: Id of the user
+      schema:
+        type: string
+    ifc-model:
+      name: model
+      in: query
+      description: Filter by latest revisions of model ids
+      schema:
+        type: array
+        items:
+          type: string
+    ifc-page:
+      name: page
+      in: query
+      description: Default value is 1
+      schema:
+        type: integer
+    ifc-page-size:
+      name: pageSize
+      in: query
+      description: 'Default 100, max 1000'
+      schema:
+        type: integer
+    ifc-revision:
+      name: revision
+      in: query
+      description: Filter by revision ids
+      schema:
+        type: array
+        items:
+          type: string
+    ifc-type:
+      name: ifcType
+      in: query
+      description: Filter by IFC type
       schema:
         type: string
     label-include:
@@ -1223,7 +2080,7 @@ components:
     model-revision-product:
       name: product
       in: query
-      description: Filter by the object Id of an IFC product
+      description: Filter by the object id of an IFC product
       schema:
         type: string
   responses:
@@ -1239,89 +2096,248 @@ components:
         message:
           type: string
           description: The error message
+    ifc-attributes:
+      type: object
+      description: 'Set of named explicit attribute values, unset attributes are omitted'
+      additionalProperties:
+        $ref: '#/components/schemas/ifc-value'
+    ifc-classification-relation:
+      type: object
     ifc-entity:
       type: object
       properties:
         objectId:
-          type: number
+          type: integer
           format: int64
-          description: The object Id of the entity
+          description: The object id of the entity
           example: 83749689
         ifcType:
           type: string
           description: The entity name
-          example: IfcMaterial
+          example: IfcEntity
         attributes:
-          type: object
-          description: 'Set of named explicit attribute values, unset attributes are omitted'
-          additionalProperties:
-            type: object
-            additionalProperties:
-              type: object
-              properties:
-                ifcType:
-                  type: string
-                  description: The IFC type of the value
-                type:
-                  type: string
-                  description: The data type of the value
-                unit:
-                  type: string
-                  description: The unit of the value
-                value:
-                  oneOf:
-                    - type: boolean
-                    - type: number
-                    - type: integer
-                    - type: string
-                    - type: array
-                      items:
-                        $ref: '#/components/schemas/ifc-product'
-                    - type: object
-                      $ref: '#/components/schemas/ifc-entity'
+          $ref: '#/components/schemas/ifc-attributes'
+    ifc-group-relation:
+      type: object
+    ifc-group:
+      type: object
+    ifc-layer-relation:
+      type: object
+    ifc-layer:
+      type: object
+    ifc-product-relation:
+      type: object
     ifc-product:
       type: object
       properties:
         objectId:
           type: integer
           format: int64
-          description: The object Id of the product
+          description: The object id of the product
           example: 73749689
         ifcType:
           type: string
           description: The IFC type of the product set
-          example: IfcColumn
+          example: IfcEntity
         attributes:
+          $ref: '#/components/schemas/ifc-attributes'
+        revisionId:
+          type: string
+          description: The id of the revision
+          example: 924809076a694255c489d236517a55da
+        propertySets:
           type: object
-          description: 'Set of named explicit attribute values, unset attributes are omitted'
+          description: Set of named property sets associated with the product
           additionalProperties:
-            type: object
-            properties:
-              ifcType:
-                type: string
-                description: The IFC type of the value
-              type:
-                type: string
-                description: The data type of the value
-              unit:
-                type: string
-                description: The unit of the value
-              value:
-                oneOf:
-                  - type: boolean
-                  - type: number
-                  - type: integer
-                  - type: string
-                  - type: array
-                    items:
-                      $ref: '#/components/schemas/ifc-product'
-                  - type: object
-                    $ref: '#/components/schemas/ifc-entity'
-            example:
-              GlobalId:
-                ifcType: IfcGloballyUniqueId
-                type: string
-                value: 3AVAJgvmbEC9V$1uI4oTt6
+            $ref: '#/components/schemas/ifc-property-set'
+        quantitySets:
+          type: object
+          description: Set of named quantity sets associated with the product
+          additionalProperties:
+            $ref: '#/components/schemas/ifc-quantity-set'
+        materials:
+          type: array
+          description: List of materials associated with the product
+          items:
+            $ref: '#/components/schemas/ifc-entity'
+        type:
+          $ref: '#/components/schemas/ifc-type'
+    ifc-property-set:
+      type: object
+      description: |
+        Represents a property set (IfcPropertySet).
+
+        A property set is an Entity containing a set of named properties.
+
+        Property sets with names starting with "Pset_" are predefined in the Property Sets Definition.
+      properties:
+        objectId:
+          type: integer
+          format: int64
+          description: The object id of the property set
+          example: 12345678
+        ifcType:
+          type: string
+          description: The IFC type of the property set
+          example: IfcPropertySet
+        attributes:
+          $ref: '#/components/schemas/ifc-attributes'
+        revisionId:
+          type: string
+          description: The id of the revision
+          example: 924809076a694255c489d236517a55da
+        properties:
+          type: object
+          description: Set of named properties
+          additionalProperties:
+            $ref: '#/components/schemas/ifc-property'
+    ifc-property:
+      type: object
+      properties:
+        description:
+          type: string
+          description: Description of the property
+          example: Property description
+        ifcType:
+          type: string
+          description: The IFC type of the property
+          example: IfcPropertySingleValue
+        nominalValue:
+          $ref: '#/components/schemas/ifc-value'
+        enumerationValues:
+          type: array
+          items:
+            $ref: '#/components/schemas/ifc-value'
+        listValues:
+          type: array
+          items:
+            $ref: '#/components/schemas/ifc-value'
+        lowerBoundValue:
+          $ref: '#/components/schemas/ifc-value'
+        upperBoundValue:
+          $ref: '#/components/schemas/ifc-value'
+        propertyReference:
+          $ref: '#/components/schemas/ifc-value'
+        properties:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ifc-property'
+    ifc-quantity-set:
+      type: object
+      description: |
+        Represents a quantity set (IfcElementQuantity).
+
+        A property set is an Entity containing a set of named quantities.
+      properties:
+        objectId:
+          type: integer
+          format: int64
+          description: The object id of the quantity set
+          example: 12345678
+        ifcType:
+          type: string
+          description: The IFC type of the quantity set
+          example: IfcQuantitySet
+        attributes:
+          $ref: '#/components/schemas/ifc-attributes'
+        revisionId:
+          type: string
+          description: The id of the revision
+          example: 924809076a694255c489d236517a55da
+        properties:
+          type: object
+          description: Set of named quantities
+          additionalProperties:
+            $ref: '#/components/schemas/ifc-quantity'
+    ifc-quantity:
+      type: object
+      description: Represents a physical quantity that can be associated with IFC objects using quantity sets
+      properties:
+        description:
+          type: string
+          description: Description of the quantity
+          example: Quantity description
+        ifcType:
+          type: string
+          description: The IFC type of the quantity
+          example: IfcElementQuantity
+        value:
+          $ref: '#/components/schemas/ifc-value'
+    ifc-type-relation:
+      type: object
+    ifc-type:
+      type: object
+      description: Represents common type information associated with a IFC product.
+      properties:
+        objectId:
+          type: integer
+          format: int64
+          description: The object id of the type
+          example: 75749589
+        ifcType:
+          type: string
+          description: The IFC type of the type
+          example: IfcEntity
+        attributes:
+          $ref: '#/components/schemas/ifc-attributes'
+        revisionId:
+          type: string
+          description: The id of the revision
+          example: 924809076a694255c489d236517a55da
+        propertySets:
+          type: object
+          description: Set of named property sets associated with the type
+          additionalProperties:
+            $ref: '#/components/schemas/ifc-property-set'
+        quantitySets:
+          type: object
+          description: Set of named quantity sets associated with the type
+          additionalProperties:
+            $ref: '#/components/schemas/ifc-quantity-set'
+        materials:
+          type: array
+          description: List of materials associated with the type
+          items:
+            $ref: '#/components/schemas/ifc-entity'
+    ifc-value:
+      type: object
+      properties:
+        ifcType:
+          type: string
+          description: The IFC type of the value
+        type:
+          type: string
+          description: The data type of the value
+        unit:
+          type: string
+          description: The unit of the value
+        value:
+          oneOf:
+            - type: boolean
+            - type: number
+            - type: integer
+            - type: string
+            - type: array
+              items:
+                $ref: '#/components/schemas/ifc-product'
+            - type: object
+              $ref: '#/components/schemas/ifc-entity'
+      example:
+        GlobalId:
+          ifcType: IfcGloballyUniqueId
+          type: string
+          value: 3AVAJgvmbEC9V$1uI4oTt6
+    label-group:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Id of the label group
+          example: 357t0ccc8f74719096c734de18fc6512
+        name:
+          type: string
+          description: Name of the label group
+          example: Group name
     label:
       type: object
       properties:
@@ -1343,17 +2359,6 @@ components:
           type: boolean
           description: Soft deletion state of the label
           example: false
-    label-group:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Id of the label group
-          example: 357t0ccc8f74719096c734de18fc6512
-        name:
-          type: string
-          description: Name of the label group
-          example: Group name
     member:
       type: object
       properties:
@@ -1367,50 +2372,6 @@ components:
           example: member
         user:
           $ref: '#/components/schemas/user'
-    model:
-      type: object
-      description: |
-        Represents an IFC model as a set of Revisions.
-
-        A large building project can contain multiple IFC models.
-
-        They are often divided by domain (architecture, electrical, etc.)
-      properties:
-        id:
-          type: string
-          description: 'A unique identifier for a model, represented as compacted UUID using 32 hexadecimal characters'
-          example: 47024671cbd642a9c7c84808d4d509f5
-        name:
-          type: string
-          description: 'The name of the model, limited to 512 characters'
-          example: Model description
-    model-revision:
-      type: object
-      description: |
-        Represents a revision of a Model.
-
-        A new revision is created by uploading an IFC model.
-      properties:
-        comment:
-          type: string
-          description: 'Text describing the revision, limited to 64K characters'
-          example: Revision description
-        createdAt:
-          type: string
-          description: The date and time the revision was created in ISO 8601 format
-          example: 2016-09-26T14:45:20.000Z
-        id:
-          type: string
-          description: 'A unique identifier for the revision, represented as compacted UUID using 32 hexadecimal characters.'
-          example: 924809076a694255c489d236517a55da
-        model:
-          $ref: '#/components/schemas/model'
-        user:
-          $ref: '#/components/schemas/user'
-        version:
-          type: integer
-          description: A number that is incremented for each new revision of a model
-          example: 1
     model-revision-status:
       type: object
       properties:
@@ -1446,6 +2407,50 @@ components:
           $ref: '#/components/schemas/model-revision'
         user:
           $ref: '#/components/schemas/user'
+    model-revision:
+      type: object
+      description: |
+        Represents a revision of a Model.
+
+        A new revision is created by uploading an IFC model.
+      properties:
+        comment:
+          type: string
+          description: 'Text describing the revision, limited to 64K characters'
+          example: Revision description
+        createdAt:
+          type: string
+          description: The date and time the revision was created in ISO 8601 format
+          example: 2016-09-26T14:45:20.000Z
+        id:
+          type: string
+          description: 'A unique identifier for the revision, represented as compacted UUID using 32 hexadecimal characters.'
+          example: 924809076a694255c489d236517a55da
+        model:
+          $ref: '#/components/schemas/model'
+        user:
+          $ref: '#/components/schemas/user'
+        version:
+          type: integer
+          description: A number that is incremented for each new revision of a model
+          example: 1
+    model:
+      type: object
+      description: |
+        Represents an IFC model as a set of Revisions.
+
+        A large building project can contain multiple IFC models.
+
+        They are often divided by domain (architecture, electrical, etc.)
+      properties:
+        id:
+          type: string
+          description: 'A unique identifier for a model, represented as compacted UUID using 32 hexadecimal characters'
+          example: 47024671cbd642a9c7c84808d4d509f5
+        name:
+          type: string
+          description: 'The name of the model, limited to 512 characters'
+          example: Model description
     project:
       type: object
       description: |
