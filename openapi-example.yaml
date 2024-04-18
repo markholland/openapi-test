@@ -1,0 +1,53 @@
+openapi: 3.0.0
+info:
+  title: Sample API
+  description: Optional multiline or single-line description in [CommonMark](http://commonmark.org/help/) or HTML.
+  version: 1.0.0
+servers:
+  - url: https://api.example.com/v1
+    description: Optional server description, e.g. Main (production) server
+security:
+  - Bearer: []
+paths:
+  /pdf:
+    get:
+      summary: Returns a PDF.
+      operationId: getPDF
+      responses:
+        '200':    # status code
+          description: PDF file
+          content:
+            application/pdf:
+              schema: 
+                type: array
+                items: 
+                  type: string
+    post:
+      summary: Add a PDF.
+      operationId: addPDF
+      parameters:
+        - in: header
+          name: my-params
+          schema:
+            type: object
+            required: 
+              -  name
+            properties:
+              name:
+                type: string
+                example: A name
+      requestBody:
+        content:
+          application/pdf:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '204': 
+          description: No Content
+components:
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: AccessToken
