@@ -1,0 +1,74 @@
+openapi: 3.0.0
+info:
+  title: Sample API
+  description: Optional multiline or single-line description in [CommonMark](http://commonmark.org/help/) or HTML.
+  version: 1.0.0
+servers:
+  - url: https://api.example.com/v1
+    description: Optional server description, e.g. Main (production) server
+security:
+  - Bearer: []
+paths:
+  /item:
+    get:
+      summary: Returns an item.
+      operationId: getItem
+      description: |
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras gravida ac quam in blandit. Praesent imperdiet tincidunt tellus. Morbi sed elementum arcu, non eleifend libero. Integer vel tortor erat. Aliquam viverra massa sem, aliquet ultricies ligula placerat eu. Sed metus nisl, malesuada vitae blandit in, tempor ut erat. Curabitur ut erat porttitor, maximus orci eu, egestas ex. Donec mollis interdum cursus. Duis leo eros, fringilla at commodo ac, dignissim vel nisi. Cras sed massa eget risus varius hendrerit et volutpat neque. Nullam pharetra ornare lobortis. Aliquam pretium ipsum quis volutpat sollicitudin.
+
+        - list `item`.
+        - list `item` 2
+
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: 
+                oneOf: 
+                  - $ref: "#/components/schemas/item1"
+                  - $ref: "#/components/schemas/item2"
+    post:
+      summary: Add an item.
+      operationId: addItem
+      requestBody:
+        content:
+          application/json:
+            schema: 
+              oneOf: 
+                - $ref: "#/components/schemas/item1"
+                - $ref: "#/components/schemas/item2"
+      responses:
+        '200':
+          description: OK
+components:
+  schemas:
+    item1:
+      properties: 
+        id:
+          type: integer
+          example: 123456789
+        title:
+          type: string
+          example: Item title
+    item2:
+      properties: 
+        id:
+          type: integer
+          example: 123456789
+        title:
+          type: string
+          example: Item title
+        description:
+          type: string
+          example: Item description
+        type:
+          type: string
+          enum:
+            - 'primary'
+            - 'secondary'
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: AccessToken
