@@ -10,6 +10,22 @@ security:
   - Bearer: []
 paths:
   /item:
+    get: 
+      summary: List all items.
+      operationId: getItems
+      description: Lists all the items.
+      responses: 
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: 
+                  oneOf: 
+                  - $ref: "#/components/schemas/item1"
+                  - $ref: "#/components/schemas/item2"
+  /item/{id}:
     get:
       summary: Returns an item.
       operationId: getItem
@@ -18,7 +34,13 @@ paths:
 
         - list `item`.
         - list `item` 2
-
+      parameters: 
+        - name: id
+          in: path
+          required: true
+          description: Id of the item
+          schema:
+            type: string
       responses:
         '200':
           description: OK
