@@ -8,18 +8,669 @@ externalDocs:
 servers:
   - url: 'https://api.catenda.com/v2'
 tags:
+  - name: Authentication
+  - name: Collection
+  - name: Custom Field
   - name: IFC
   - name: Label
   - name: Label Group
+  - name: Library
   - name: Member
   - name: Model
   - name: Model Revision
   - name: Project
   - name: Organization
+  - name: SCIM
   - name: Team
+  - name: Topic Board
+  - name: User
+  - name: Viewer
+  - name: Webhook
 security:
-  - Bearer: []
+  - OAuth: []
 paths:
+  /oauth2/token:
+    post:
+      tags:
+        - Authentication
+      summary: Create token
+      operationId: getToken
+      description: Create an OAuth access token
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - grant_type
+              properties:
+                client_id:
+                  type: string
+                  description: Client id when performing client credentials flow
+                  example: 6eRUYFr3UTFevHr
+                client_secret:
+                  type: string
+                  description: Client secret when performing client credentials flow
+                code:
+                  type: string
+                  description: Authorization code when performing authorization code flow
+                  example: dlZE0KFxhM
+                code_verifier:
+                  type: string
+                  description: 'Client generated cryptographically random string using the characters A-Z, a-z, 0-9, and the punctuation characters -._~, between 43 and 128 characters long. Used when performing PKCE authorization code flow.'
+                  example: fRhtRGw_56Jukt_-YNF3KyYsBrgW5JKtRiN7w7YGFgJ
+                grant_type:
+                  type: string
+                  description: 'The grant type of the desired authentication flow. Valid values are authorization_code, refresh_token and client_credentials'
+                  example: authorization_code
+                redirect_uri:
+                  type: string
+                  description: The registered redirect URL of the application when performing authorization code flow
+                  example: https//www.example.com/login
+                refresh_token:
+                  type: string
+                  description: The refresh token when performing refresh token flow
+                  example: ozJ7c4OtELJNrWp4KMC4uE
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    access_token:
+                      type: string
+                      description: The access token to authorize Catenda APIs
+                      example: 4Zie1q4iz98hYitnObJHgV
+                    expires_in:
+                      type: string
+                      description: Lifetime in seconds of the access token
+                      example: 3599
+                    refresh_token:
+                      type: string
+                      description: 'The refresh token, used to obtain new access tokens'
+                      example: ozJ7c4OtELJNrWp4KMC4uE
+                    token_type:
+                      type: string
+                      description: 'The token type, valid values are **bearer**'
+                      example: bearer
+  '/projects/{project-id}/libraries/collections':
+    get:
+      tags:
+        - Collection
+      summary: List collections
+      operationId: getCollections
+      description: List all document library item collections.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/library-page'
+        - $ref: '#/components/parameters/library-page-size'
+        - $ref: '#/components/parameters/library-item-created-at-from'
+        - $ref: '#/components/parameters/library-item-created-at-to'
+        - $ref: '#/components/parameters/collection-created-by'
+        - $ref: '#/components/parameters/collection-fields'
+        - $ref: '#/components/parameters/collection-files'
+        - $ref: '#/components/parameters/collection-finalized'
+        - $ref: '#/components/parameters/collection-follow-latest-revision'
+        - $ref: '#/components/parameters/collection-followers'
+        - $ref: '#/components/parameters/collection-library-items'
+        - $ref: '#/components/parameters/collection-search'
+        - $ref: '#/components/parameters/collection-shared-by'
+        - $ref: '#/components/parameters/collection-visibility'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/collection'
+    post:
+      tags:
+        - Collection
+      summary: Create collection
+      operationId: createCollection
+      description: |
+        Add a new document library item collection.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  description: The name of the library item collection.
+                  example: Collection 1
+                description:
+                  type: string
+                  description: The description of the library item collection.
+                  example: Collection description
+                items:
+                  type: array
+                  description: List of items to add to the colleciton.
+                  items:
+                    type: object
+                    required:
+                      - libraryId
+                      - libraryItemId
+                      - fileId
+                    properties:
+                      libraryId:
+                        type: string
+                        description: The library id of the library item.
+                        example: ead9b194e6024e6b92cae1d791797b68
+                      libraryItemId:
+                        type: string
+                        description: The id of the library item.
+                        example: 5badf33213ae420ebf81e727d5281850
+                      fileId:
+                        type: string
+                        description: 'The id of the library item revision, defaults to the latest document revision id.'
+                        example: 5dc75452-29a4-4c4a-8415-991b92a92001
+                followLatestRevision:
+                  type: boolean
+                  description: Set whether the collection uses the latest revision of all items or the revision when added to the collection.
+                  example: true
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/collection'
+  '/projects/{project-id}/libraries/collections/{collection-id}':
+    get:
+      tags:
+        - Collection
+      summary: Get collections
+      operationId: getCollection
+      description: Get a single document library item collection.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/collection-id'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/collection'
+    patch:
+      tags:
+        - Collection
+      summary: Update collection
+      operationId: updateCollection
+      description: Update a document library item collection.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/collection-id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The name of the library item collection.
+                  example: Collection 1
+                description:
+                  type: string
+                  description: The description of the library item collection.
+                  example: Collection description
+                finalized:
+                  type: boolean
+                  description: Whether the collection is finalized and no longer editable.
+                  example: false
+                visibility:
+                  type: string
+                  description: Determines whether the collection is shared at the project level. Valid values are **private** and **project-members**.
+                  example: private
+                followLatestRevision:
+                  type: boolean
+                  description: Set whether the collection uses the latest revision of all items or the revision when added to the collection.
+                  example: true
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/collection'
+  '/projects/{project-id}/libraries/collections/{collection-id}/items':
+    get:
+      tags:
+        - Collection
+      summary: List collection items
+      operationId: getCollectionItems
+      description: List all document library item collection items.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/collection-id'
+        - $ref: '#/components/parameters/collection-fields'
+        - $ref: '#/components/parameters/collection-include'
+        - $ref: '#/components/parameters/collection-library-item-include'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/collection-item'
+    post:
+      tags:
+        - Collection
+      summary: Add collection items
+      operationId: createCollectionItems
+      description: Add items to a document library item collection.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/collection-id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - items
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - libraryId
+                      - libraryItemId
+                      - fileId
+                    properties:
+                      libraryId:
+                        type: string
+                        description: The library id of the library item.
+                        example: ead9b194e6024e6b92cae1d791797b68
+                      libraryItemId:
+                        type: string
+                        description: Id of the library item.
+                        example: 5badf33213ae420ebf81e727d5281850
+                      fileId:
+                        type: string
+                        description: Id of the library item revision.
+                        example: 5dc75452-29a4-4c4a-8415-991b92a92001
+                options:
+                  type: object
+                  properties:
+                    duplicateItemOption:
+                      type: string
+                      description: Determines the behaviour when attempting to add a library item with the same library item id as a library item already in the collection. In this case the request will fail by default. There are 3 options you can choose from to deal with this situation. **overwrite-different-version** will override the existing library items with the new ones. **skip-duplicate-with-different-version** will ignore provided library items that are already in the collection. **skip-duplicate-with-same-version** will fail the request if any library item is already in the collection with a different revision.
+                      example: overwrite-different-version
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/collection-item'
+    delete:
+      tags:
+        - Collection
+      summary: Remove collection item
+      operationId: deleteCollectionItem
+      description: Remove a document library item collection item from the collection.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/collection-id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - items
+              properties:
+                items:
+                  type: array
+                  description: List of library items ids of the items to remove from the collection.
+                  items:
+                    type: string
+                    description: Id of the document library item
+                    example: f9f534a6d26441gc85ffc686bacbc9e3
+      responses:
+        '204':
+          $ref: '#/components/responses/204'
+  '/projects/{project-id}/libraries/collections/{collection-id}/followers':
+    get:
+      tags:
+        - Collection
+      summary: List collection followers
+      operationId: getCollectionFollowers
+      description: List all the followers of a document library item collection.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/collection-id'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/user'
+    post:
+      tags:
+        - Collection
+      summary: Add collection follower
+      operationId: createCollectionFollower
+      description: |
+        Add a new follower to a document library item collection.
+
+        Private collections can only have collection owner as a follower. If the collection is shared at the project level users can add themselves as a follower. Collection owners and administrators can add any user as a follower.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/collection-id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+              properties:
+                userId:
+                  type: string
+                  description: Id of the user to follow the collection.
+                  example: 524809076a694255b989d236517a55da
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user'
+  '/projects/{project-id}/libraries/collections/{collection-id}/followers/batch':
+    patch:
+      tags:
+        - Collection
+      summary: Update collection followers
+      operationId: updateCollectionFollowers
+      description: |
+        Update multiple followers on a document library item collection.
+
+        This resource is only available to project administrators and collection owners.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/collection-id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                followersToAdd:
+                  type: array
+                  description: List of user ids of users to add as followers of the document library item collection.
+                  items:
+                    type: string
+                    example: 524809076a694255b989d236517a55da
+                followersToRemove:
+                  type: array
+                  description: List of user ids of users to remove as followers of the document library item collection.
+                  items:
+                    type: string
+                    example: 524809076a694255b989d236517a55da
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/user'
+  '/projects/{project-id}/libraries/collections/{collection-id}/followers/{user-id}':
+    delete:
+      tags:
+        - Collection
+      summary: Remove collection follower
+      operationId: deleteCollectionFollower
+      description: |
+        Remove a follower from a document library item collection.
+
+        If the collection is private only the collection owner can remove themselves as a follower. If the collection is shared at the project level users can remove themselves as a follower. Collection owners and administrators can remove any user as a follower.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/collection-id'
+        - $ref: '#/components/parameters/user-id'
+      responses:
+        '204':
+          $ref: '#/components/responses/204'
+  '/projects/{project-id}/custom-fields':
+    get:
+      tags:
+        - Custom Field
+      summary: List custom fields
+      operationId: getCustomFields
+      description: List all the custom fields.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - name: archived
+          in: query
+          description: 'Filter by archived status. Valid values are **all**, **archived**, **not-archived**. Default value is **all**.'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/custom-field'
+    post:
+      tags:
+        - Custom Field
+      summary: Create custom field
+      operationId: createCustomField
+      description: Add a new custom field.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - description
+                - type
+              properties:
+                name:
+                  type: string
+                  description: The name of the custom field.
+                  example: Custom field 1
+                description:
+                  type: string
+                  description: Description of the custom field.
+                  example: Custom field description
+                type:
+                  type: string
+                  description: 'Type of the custom field. Valid values are **text**, **integer**, **double**, or **enumeration**.'
+                  example: 397t0ccc8f74619096c738de15dc6512
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/custom-field'
+  '/projects/{project-id}/custom-fields/{custom-field-id}':
+    get:
+      tags:
+        - Custom Field
+      summary: Get custom field
+      operationId: getCustomField
+      description: Get a single custom field.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/custom-field-id'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/custom-field'
+    patch:
+      tags:
+        - Custom Field
+      summary: Update custom field
+      operationId: updateCustomField
+      description: |
+        Update a custom field.
+
+        This resource is also where you can modify the custom field enumeration items.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/custom-field-id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The name of the custom field
+                  example: Custom field 1
+                description:
+                  type: string
+                  description: Description of the custom field
+                  example: Custom field description
+                archived:
+                  type: boolean
+                  description: Archived status.
+                  example: false
+                enumerationItemsToAdd:
+                  type: array
+                  description: Enumeration items to add to the custom field.
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: The name of the enumeration item.
+                        example: Item name
+                      code:
+                        type: string
+                        description: 'The code of the item, value is unique for a custom field.'
+                enumerationItemsToMove:
+                  type: array
+                  description: Enumeration items to reorder in the custom field.
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: 'A unique identifier for an enumeration item, represented as compacted UUID using 32 hexadecimal characters'
+                        example: 224809076a694255b589d236517a55da
+                      itemBeforeId:
+                        type: string
+                        description: 'Determines the position this item will sit within the enumeration, provide the id of the enumeration item you want this item to appear immediately after. Set the value to null to place this item at the beginning.'
+                        example: null
+                        nullable: true
+                enumerationItemsToDisable:
+                  type: array
+                  description: Enumeration items to disable in the custom field.
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: 'A unique identifier for an enumeration item, represented as compacted UUID using 32 hexadecimal characters'
+                        example: 224809076a694255b589d236517a55da
+                enumerationItemsToRestore:
+                  type: array
+                  description: Enumeration items to restore in the custom field.
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: 'A unique identifier for an enumeration item, represented as compacted UUID using 32 hexadecimal characters'
+                        example: 224809076a694255b589d236517a55da
+                enumerationItemsToRename:
+                  type: array
+                  description: Enumeration items to rename in the custom field.
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: 'A unique identifier for an enumeration item, represented as compacted UUID using 32 hexadecimal characters'
+                        example: 224809076a694255b589d236517a55da
+                      name:
+                        type: string
+                        description: Name of the enumeration item.
+                        example: Item name
+                enumerationItemsToUpdateCode:
+                  type: array
+                  description: Enumeration items to update with new codes in the custom field.
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: 'A unique identifier for an enumeration item, represented as compacted UUID using 32 hexadecimal characters'
+                        example: 224809076a694255b589d236517a55da
+                      code:
+                        type: string
+                        description: 'The code of the item, value is unique for a custom field.'
+                        example: Item name
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/custom-field'
+  '/projects/{project-id}/custom-fields/{custom-field-id}/enumeration-items':
+    get:
+      tags:
+        - Custom Field
+      summary: List enumeration items
+      operationId: getCustomFieldEnumerationItems
+      description: List all the enumeration items of a custom field.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/custom-field-id'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/custom-field-enumeration'
   '/projects/{project-id}/ifc/classifications':
     get:
       tags:
@@ -48,7 +699,7 @@ paths:
         - IFC
       summary: Get classification
       operationId: getIfcClassification
-      description: Get a classification entity.
+      description: Get a single classification entity.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/classification-id'
@@ -64,9 +715,9 @@ paths:
     get:
       tags:
         - IFC
-      summary: Get classification relations
+      summary: List classification relations
       operationId: getIfcClassificationRelations
-      description: Get the relations for a classification.
+      description: List all the relations for a classification.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/classification-id'
@@ -108,7 +759,7 @@ paths:
         - IFC
       summary: Get classification reference
       operationId: getIfcClassificationReference
-      description: Get a classification reference entity.
+      description: Get a single classification reference entity.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/classification-reference-id'
@@ -126,7 +777,7 @@ paths:
         - IFC
       summary: List classification references relations
       operationId: getIfcClassificationReferencesRelations
-      description: List the relations for all the classification references in a project.
+      description: List all the relations for all the classification references in a project.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/ifc-model'
@@ -146,9 +797,9 @@ paths:
     get:
       tags:
         - IFC
-      summary: Get classification reference relations
+      summary: List classification reference relations
       operationId: getIfcClassificationReferenceRelations
-      description: Get the relations for a classification reference.
+      description: Get all the relations for a classification reference.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/classification-reference-id'
@@ -190,7 +841,7 @@ paths:
         - IFC
       summary: Query groups
       operationId: queryIfcGroups
-      description: Query all groups in a project.
+      description: Query groups in a project.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/ifc-model'
@@ -253,7 +904,7 @@ paths:
         - IFC
       summary: Get group
       operationId: getIfcGroup
-      description: Get a group.
+      description: Get a single group.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/group-id'
@@ -271,7 +922,7 @@ paths:
         - IFC
       summary: List groups relations
       operationId: getIfcGroupsRelations
-      description: List the relations for all the groups in a project.
+      description: List all the relations for all the groups in a project.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/ifc-model'
@@ -291,9 +942,9 @@ paths:
     get:
       tags:
         - IFC
-      summary: Get group relations
+      summary: List group relations
       operationId: getIfcGroupRelations
-      description: Get the relations for a group.
+      description: List all the relations for a group.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/group-id'
@@ -335,7 +986,7 @@ paths:
         - IFC
       summary: Query layers
       operationId: queryIfcLayers
-      description: Query all layers in a project.
+      description: Query layers in a project.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/ifc-model'
@@ -400,7 +1051,7 @@ paths:
         - IFC
       summary: Get layer
       operationId: getIfcLayer
-      description: Get a layer.
+      description: Get a single layer.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/layer-id'
@@ -418,7 +1069,7 @@ paths:
         - IFC
       summary: List layers relations
       operationId: getIfcLayersRelations
-      description: List the relations for all the layers in a project.
+      description: List all the relations for all the layers in a project.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/ifc-model'
@@ -438,9 +1089,9 @@ paths:
     get:
       tags:
         - IFC
-      summary: Get layer relations
+      summary: List layer relations
       operationId: getIfcLayerRelations
-      description: Get the relations for a layer.
+      description: List all the relations for a layer.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/layer-id'
@@ -500,7 +1151,7 @@ paths:
         - IFC
       summary: List products
       operationId: getIfcProducts
-      description: List all products in a project.
+      description: List all the products in a project.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/ifc-model'
@@ -522,7 +1173,7 @@ paths:
         - IFC
       summary: Query products
       operationId: queryIfcProducts
-      description: Query all products in a project.
+      description: Query products in a project.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/ifc-model'
@@ -587,7 +1238,7 @@ paths:
         - IFC
       summary: Get product
       operationId: getIfcProduct
-      description: Get a product.
+      description: Get a single product.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/product-id'
@@ -605,7 +1256,7 @@ paths:
         - IFC
       summary: List products relations
       operationId: getIfcProductsRelations
-      description: List the relations for all the products in a project.
+      description: List all the relations for all the products in a project.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/ifc-model'
@@ -625,9 +1276,9 @@ paths:
     get:
       tags:
         - IFC
-      summary: Get product relations
+      summary: List product relations
       operationId: getIfcProductRelations
-      description: Get the relations for a product.
+      description: List all the relations for a product.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/product-id'
@@ -647,7 +1298,7 @@ paths:
         - IFC
       summary: List types
       operationId: getIfcTypes
-      description: List all types in a project.
+      description: List all the types in a project.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/ifc-model'
@@ -669,7 +1320,7 @@ paths:
         - IFC
       summary: Query types
       operationId: queryIfcTypes
-      description: Query all types in a project.
+      description: Query types in a project.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/ifc-model'
@@ -732,7 +1383,7 @@ paths:
         - IFC
       summary: Get type
       operationId: getIfcType
-      description: Get a type.
+      description: Get a single type.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/type-id'
@@ -750,7 +1401,7 @@ paths:
         - IFC
       summary: List types relations
       operationId: getIfcTypesRelations
-      description: List the relations for all the types in a project.
+      description: List all the relations for all the types in a project.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/ifc-model'
@@ -770,9 +1421,9 @@ paths:
     get:
       tags:
         - IFC
-      summary: Get type relations
+      summary: List type relations
       operationId: getIfcTypeRelations
-      description: Get the relations for a type.
+      description: List all the relations for a type.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/type-id'
@@ -792,6 +1443,7 @@ paths:
         - Label
       summary: List labels
       operationId: getLabels
+      description: List all the labels.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/label-include'
@@ -820,6 +1472,7 @@ paths:
         - Label
       summary: Create label
       operationId: createLabel
+      description: Add a new label.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/label-include'
@@ -858,6 +1511,7 @@ paths:
         - Label
       summary: Get label
       operationId: getLabel
+      description: Get a single label.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/label-id'
@@ -874,6 +1528,7 @@ paths:
         - Label
       summary: Update label
       operationId: updateLabel
+      description: Update a label.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/label-id'
@@ -895,6 +1550,7 @@ paths:
                   type: string
                   description: |
                     Id of label group to assign the label to, provide null as value to remove label from current group.
+                  nullable: true
                 deleted:
                   type: boolean
                   description: Soft deletion state of the label
@@ -912,6 +1568,7 @@ paths:
         - Label
       summary: Delete label
       operationId: deleteLabel
+      description: Delete a label.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/label-id'
@@ -924,6 +1581,7 @@ paths:
         - Label Group
       summary: List label groups
       operationId: getLabelGroups
+      description: List all the label groups.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - name: search
@@ -950,6 +1608,7 @@ paths:
         - Label Group
       summary: Create label group
       operationId: createLabelGroup
+      description: Add a new label group.
       parameters:
         - $ref: '#/components/parameters/project-id'
       requestBody:
@@ -978,6 +1637,7 @@ paths:
         - Label Group
       summary: Get label group
       operationId: getLabelGroup
+      description: Get a single label group.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/label-group-id'
@@ -993,6 +1653,7 @@ paths:
         - Label Group
       summary: Update label group
       operationId: updateLabelGroup
+      description: Update a label group.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/label-group-id'
@@ -1019,19 +1680,684 @@ paths:
         - Label Group
       summary: Delete label group
       operationId: deleteLabelGroup
+      description: Delete a label group.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/label-group-id'
       responses:
         '204':
           $ref: '#/components/responses/204'
+  '/projects/{project-id}/libraries':
+    get:
+      tags:
+        - Library
+      summary: List libraries
+      operationId: getLibraries
+      description: |
+        List all libraries.
+
+        Supported library types are **document**, **link**, **embedded_value** and **classification**.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/library-page'
+        - $ref: '#/components/parameters/library-page-size'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/library'
+    post:
+      tags:
+        - Library
+      summary: Create library
+      operationId: createLibrary
+      description: |
+        Add a new library.
+
+        Supported library types are **classification**.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - type
+              properties:
+                name:
+                  type: string
+                  description: The name of the library
+                  example: Library 1
+                type:
+                  type: string
+                  description: |
+                    The library type, valid values are:
+                     - classification.
+                  example: classification
+                classification:
+                  type: object
+                  description: Fields specific to classification libraries
+                  properties:
+                    source:
+                      type: string
+                      description: Source (or publisher) for this classification
+                    edition:
+                      type: string
+                      description: The edition or version of the classification system from which the classification notation is derived
+                    editionDate:
+                      type: string
+                      description: 'The date on which the edition of the classification used became valid, the format should be yyyy-mm-dd'
+                      example: '2016-09-23'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/library'
+  '/projects/{project-id}/libraries/{library-id}':
+    get:
+      tags:
+        - Library
+      summary: Get library
+      operationId: getLibrary
+      description: |
+        Get a single library.
+
+        Supported library types are **document**, **link**, **embedded_value** and **classification**.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/library-id'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/library'
+    patch:
+      tags:
+        - Library
+      summary: Update library
+      operationId: updateLibrary
+      description: |
+        Update a library.
+
+        Supported library types are **classification**.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/library-id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  description: The name of the library
+                  example: Library 1
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/library'
+    delete:
+      tags:
+        - Library
+      summary: Delete library
+      operationId: deleteLibrary
+      description: |
+        Delete a library.
+
+        Supported library types are **classification**.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/library-id'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/library'
+  '/projects/{project-id}/libraries/{library-id}/items':
+    get:
+      tags:
+        - Library
+      summary: List library items
+      operationId: getLibraryItems
+      description: |
+        List all library items.
+
+        If the library supports revisions then the latest revision for each item will be returned.
+
+        Supported library types are **document**, **link**, **embedded_value** and **classification**.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/library-id'
+        - $ref: '#/components/parameters/library-item-parent-id'
+        - $ref: '#/components/parameters/library-item-associations'
+        - $ref: '#/components/parameters/library-item-labels'
+        - $ref: '#/components/parameters/library-item-search'
+        - $ref: '#/components/parameters/library-item-created-at-from'
+        - $ref: '#/components/parameters/library-item-created-at-to'
+        - $ref: '#/components/parameters/library-item-published-at-from'
+        - $ref: '#/components/parameters/library-item-published-at-to'
+        - $ref: '#/components/parameters/library-item-include'
+        - $ref: '#/components/parameters/library-item-sub-folders'
+        - $ref: '#/components/parameters/library-page'
+        - $ref: '#/components/parameters/library-page-size'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/library-item-document'
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/library-item-link'
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/library-item-embedded_value'
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/library-item-classification'
+    post:
+      tags:
+        - Library
+      summary: Create library item
+      operationId: createLibraryItem
+      description: |
+        Add a new library item.
+
+        Supported library types are **document**, **link** and **classification**.
+
+        For file upload, only **document** library type is supported.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/library-id'
+        - in: header
+          name: Bimsync-Params
+          schema:
+            type: object
+            required:
+              - name
+            properties:
+              name:
+                type: string
+                description: Name of the document
+                example: Document Name
+              parentId:
+                type: string
+                description: |
+                  A unique identifier for the parent of the library item represented as compacted UUID using 32 hexadecimal characters.
+
+                  If no parent is present, the parent is the root of the library.
+                example: 924809076a694255b589d236517a55da
+              document:
+                type: object
+                description: Fields specific for document library items.
+                properties:
+                  type:
+                    type: string
+                    description: Value must be **file**.
+                    example: file
+                  filename:
+                    type: string
+                    description: Name of the document revision.
+                    example: Document Revision Name
+              failOnDocumentExists:
+                type: boolean
+                description: |
+                  Supported in libraries of type document.
+
+                  Default value is **true** which means when a file with the same name already exists in the folder the response will be 25 CONFLICT and upload will fail. When set to false a new revision will be created.
+                example: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/library-item-document-create'
+                - $ref: '#/components/schemas/library-item-link-create'
+                - $ref: '#/components/schemas/library-item-classification-create'
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/library-item-document'
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/library-item-link'
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/library-item-classification'
+  '/projects/{project-id}/libraries/{library-id}/items/{library-item-id}':
+    get:
+      tags:
+        - Library
+      summary: Get library item
+      operationId: getLibraryItem
+      description: |
+        Get a single library item.
+
+        If the library supports revisions then the latest revision will be returned.
+
+        By default returns the library item details as JSON.
+
+        To download the library item use **Content-Type: application/octet-stream** in request headers.
+
+        Supported library types are **document**, **link**, **embedded_value** and **classification**.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/library-id'
+        - $ref: '#/components/parameters/library-item-id'
+        - $ref: '#/components/parameters/library-item-format'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/library-item-document'
+                  - $ref: '#/components/schemas/library-item-link'
+                  - $ref: '#/components/schemas/library-item-embedded_value'
+                  - $ref: '#/components/schemas/library-item-classification'
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+    patch:
+      tags:
+        - Library
+      summary: Update a library item
+      operationId: updateLibraryItem
+      description: |
+        Update a library item.
+
+        Supported library types are **document**, and **link**.
+
+        In the case of document libraries updating **labels**, **name** or **parentId** at the same time is not supported.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/library-id'
+        - $ref: '#/components/parameters/library-item-id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The name of the library item.
+                  example: Name
+                parentId:
+                  type: string
+                  description: |
+                    A unique identifier for the parent of the library item represented as compacted UUID using 32 hexadecimal characters.
+
+                    If no parent is present the item will keep its parent and not be modified.
+                  example: 924809076a694255b589d236517a55da
+                labelsToAdd:
+                  type: array
+                  description: List of labels to add to the library item.
+                  items:
+                    type: object
+                    description: Id or name of the label to add
+                    properties:
+                      id:
+                        type: string
+                        description: Id of an existing label
+                      name:
+                        type: string
+                        description: Name of an existing label otherwise a new label is created with this name
+                labelsToRemove:
+                  type: array
+                  description: List of labels to add to the library item.
+                  items:
+                    type: object
+                    description: Id or name of the label to add
+                    properties:
+                      id:
+                        type: string
+                        description: Id of an existing label
+                      name:
+                        type: string
+                        description: Name of an existing label otherwise a new label is created with this name
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/library-item-document'
+                  - $ref: '#/components/schemas/library-item-link'
+    delete:
+      tags:
+        - Library
+      summary: Delete library item
+      operationId: deleteLibraryItem
+      description: |
+        Delete a library item
+
+        Supported library types are **document**, **link** and **classification**.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/library-id'
+        - $ref: '#/components/parameters/library-item-id'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/library-item-document'
+                  - $ref: '#/components/schemas/library-item-link'
+                  - $ref: '#/components/schemas/library-item-classification'
+  '/projects/{project-id}/libraries/{library-id}/items/{library-item-id}/token':
+    post:
+      tags:
+        - Library
+      summary: Create library item download token
+      operationId: getLibraryItemToken
+      description: |
+        Create a signed download URL token to allow access to the latest revision of a document without requiring additional authentication.
+
+        The token will expire in one hour.
+
+        Supported library types are **document**.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/library-id'
+        - $ref: '#/components/parameters/library-item-id'
+        - $ref: '#/components/parameters/library-item-format'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/library-item-document-token'
+  '/projects/{project-id}/libraries/{library-id}/items/{library-item-id}/revisions':
+    get:
+      tags:
+        - Library
+      summary: List library item revisions
+      operationId: getLibraryItemRevisions
+      description: |
+        List all revisions for a library item.
+
+        Supported library types are **document**.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/library-id'
+        - $ref: '#/components/parameters/library-item-id'
+        - $ref: '#/components/parameters/library-page'
+        - $ref: '#/components/parameters/library-page-size'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  oneOf:
+                    - $ref: '#/components/schemas/library-item-document-file-revision'
+    post:
+      tags:
+        - Library
+      summary: Create library item revision
+      operationId: createLibraryItemRevision
+      description: |
+        Create a new library item revision.
+
+        Attach the file and set `Content-Type` header to `application/octet-stream`.
+
+        Supported library types are **document**.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/library-id'
+        - $ref: '#/components/parameters/library-item-id'
+        - in: header
+          name: Bimsync-Params
+          schema:
+            type: object
+            required:
+              - name
+            properties:
+              name:
+                type: string
+                description: Name of the document revision
+                example: Document Revision Name
+          required: true
+      requestBody:
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/library-item-document-file-revision'
+  '/projects/{project-id}/libraries/{library-id}/items/{library-item-id}/revisions/{library-item-revision-id}':
+    get:
+      tags:
+        - Library
+      summary: Get library item revision
+      operationId: getLibraryItemRevision
+      description: |
+        Get a library item revision.
+
+        By default returns the library item details as JSON.
+
+        To download the library item use **Content-Type: application/octet-stream** in request headers.
+
+        Supported library types are **document**.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/library-id'
+        - $ref: '#/components/parameters/library-item-id'
+        - $ref: '#/components/parameters/library-item-revision-id'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/library-item-document-file-revision'
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+  '/projects/{project-id}/libraries/{library-id}/items/{library-item-id}/revisions/{library-item-revision-id}/token':
+    post:
+      tags:
+        - Library
+      summary: Create library item revision download token
+      operationId: getLibraryItemRevisionToken
+      description: |
+        Create a signed download URL token to allow access to the document revision without requiring additional authentication.
+
+        The token will expire in one hour.
+
+        Supported library types are **document**.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/library-id'
+        - $ref: '#/components/parameters/library-item-id'
+        - $ref: '#/components/parameters/library-item-revision-id'
+        - $ref: '#/components/parameters/library-item-format'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/library-item-document-token'
+  '/projects/{project-id}/libraries/{library-id}/items/{library-item-id}/associations':
+    get:
+      tags:
+        - Library
+      summary: List library item associations
+      operationId: getLibraryItemAssociations
+      description: |
+        List all associations between a library item and IFC products.
+
+        IFC products are represented by their IfcGloballyUniqueId.
+
+        Supported library types are **document**, **link**, **embedded_value** and **classification**.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/library-id'
+        - $ref: '#/components/parameters/library-item-id'
+        - $ref: '#/components/parameters/library-page'
+        - $ref: '#/components/parameters/library-page-size'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/library-item-association'
+    post:
+      tags:
+        - Library
+      summary: Add library item associations
+      operationId: addLibraryItemAssociations
+      description: |
+        Associate a library item to IFC products.
+
+        IFC products are represented by their IfcGloballyUniqueId.
+
+        Supported library types are **document**, **link** and **classification**.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/library-id'
+        - $ref: '#/components/parameters/library-item-id'
+        - in: query
+          name: revision
+          description: |
+            Specify which revisions are used to resolve global id from objectId by providing a comma separated list. If not present, the latest revisions in all models in the project are used.
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                description: Supported fields are globalId or objectId
+                properties:
+                  globalId:
+                    type: string
+                    description: A 22 character IfcGloballyUniqueId.
+                    example: 2_TmT90tD0x9tJSTsyTb1J
+                  objectId:
+                    type: string
+                    description: The object id of a product.
+                    example: 192042324556
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/library-item-association'
+    delete:
+      tags:
+        - Library
+      summary: Remove library item associations
+      operationId: removeLibraryItemAssociations
+      description: |
+        Remove associations between a library item and IFC products.
+
+        Supported library types are **document**, **link** and **classification**.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/library-id'
+        - $ref: '#/components/parameters/library-item-id'
+        - in: query
+          name: revision
+          description: |
+            Specify which revisions are used to resolve global id from objectId by providing a comma separated list. If not present, the latest revisions in all models in the project are used.
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                description: Supported fields are globalId or objectId
+                properties:
+                  globalId:
+                    type: string
+                    description: A 22 character IfcGloballyUniqueId.
+                    example: 2_TmT90tD0x9tJSTsyTb1J
+                  objectId:
+                    type: string
+                    description: The object id of a product.
+                    example: 192042324556
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/library-item-association'
   '/projects/{project-id}/members':
     get:
       tags:
         - Member
       summary: List members
       operationId: getMembers
-      description: List project members
+      description: List all the project members.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - name: userType
@@ -1055,7 +2381,7 @@ paths:
       summary: Create member
       operationId: createMember
       description: |
-        Add a project member.
+        Add a new project member.
 
         The current user must be an administrator of the project.
       parameters:
@@ -1094,6 +2420,7 @@ paths:
         - Member
       summary: Get member
       operationId: getMember
+      description: Get a single member.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/user-id'
@@ -1110,7 +2437,7 @@ paths:
       summary: Update member
       operationId: updateMember
       description: |
-        Update project membership.
+        Update project membership of a member.
 
         The current user must be a project administrator.
       parameters:
@@ -1160,6 +2487,7 @@ paths:
         - Model
       summary: List models
       operationId: getModels
+      description: List all the models in a project.
       parameters:
         - $ref: '#/components/parameters/project-id'
       responses:
@@ -1176,6 +2504,7 @@ paths:
         - Model
       summary: Create model
       operationId: createModel
+      description: Add a new model.
       parameters:
         - $ref: '#/components/parameters/project-id'
       requestBody:
@@ -1272,6 +2601,7 @@ paths:
         - Model Revision
       summary: List revisions
       operationId: getRevisions
+      description: List all the model revisions.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/model-revision-model'
@@ -1293,7 +2623,7 @@ paths:
       description: |
         Upload a new model revision.
 
-        Include the IFC file in the request and set the `Content-Type` header to be `application/ifc`
+        Include the IFC file in the request and set the `Content-Type` header to be `application/ifc`.
 
         **Note:** The code examples for this method may have incorrect headers.
       parameters:
@@ -1304,13 +2634,15 @@ paths:
             type: object
             required:
               - comment
+              - filename
+              - model
             properties:
               callbackUri:
                 type: string
                 description: |
                   Pass a URI to be notified when the revision is processed.
 
-                  Catenda will issue an HTTP GET request with the query parameter token set to revision status id and result set to either 'success' or 'error'.
+                  Catenda will issue an HTTP GET request with the query parameter token set to revision status id and result set to either **success** or **error**.
                 example: 'https://example.com'
               comment:
                 type: string
@@ -1349,7 +2681,11 @@ paths:
       summary: Get revision
       operationId: getRevision
       description: |
-        Download the IFC revision by setting the `Accept` header to be `application/ifc`
+        Get a revision of an IFC model.
+
+        By default returns the revision details as JSON.
+
+        To download the revision use **Content-Type: application/ifc** in request headers.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/model-revision-id'
@@ -1371,6 +2707,7 @@ paths:
         - Model Revision
       summary: Get revision status
       operationId: getRevisionStatus
+      description: Get the processing status for a revision.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/model-revision-status-id'
@@ -1405,7 +2742,7 @@ paths:
       summary: Create project
       operationId: createProject
       description: |
-        Create a new project.
+        Add a new project.
 
         The project will be owned by the current user.
       requestBody:
@@ -1439,6 +2776,7 @@ paths:
         - Project
       summary: Get project
       operationId: getProject
+      description: Get a single project.
       parameters:
         - $ref: '#/components/parameters/project-id'
       responses:
@@ -1568,7 +2906,7 @@ paths:
       summary: List members
       operationId: getOrganizationMembers
       description: |
-        List organization members.
+        List all organization members.
 
         The current user must be a member of the organization.
       parameters:
@@ -1628,7 +2966,7 @@ paths:
       summary: Get member
       operationId: getOrganizationMember
       description: |
-        Get organization member.
+        Get a single organization member.
 
         The current user must be a member of the organization.
       parameters:
@@ -1680,7 +3018,9 @@ paths:
       summary: Remove member
       operationId: removeOrganizationMember
       description: |
-        Remove an organization member. The current user must be an owner of the organization to remove other members.
+        Remove an organization member.
+
+        The current user must be an owner of the organization to remove other members.
 
         There must be at least one other owner in the organization when removing the current user.
       parameters:
@@ -1696,7 +3036,7 @@ paths:
       summary: Create project
       operationId: createOrganizationProject
       description: |
-        Create a new project. 
+        Add a new project. 
 
         The current user must be an owner of the organization. 
 
@@ -1728,6 +3068,313 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/project'
+  /scim/v2/ServiceProviderConfig:
+    get:
+      tags:
+        - SCIM
+      summary: Get service provider config
+      operationId: getServiceProviderConfig
+      description: Returns all the SCIM specification features that are available.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+  /scim/v2/Schemas:
+    get:
+      tags:
+        - SCIM
+      summary: Get schemas
+      operationId: getSchemas
+      description: Returns all the supported schemas.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+  '/scim/v2/Schemas/{schema-uri}':
+    get:
+      tags:
+        - SCIM
+      summary: Get schema
+      operationId: getSchema
+      description: Returns a single schema.
+      parameters:
+        - $ref: '#/components/parameters/schema-uri'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+  /scim/v2/ResourceTypes:
+    get:
+      tags:
+        - SCIM
+      summary: Get resource types
+      operationId: getResourceTypes
+      description: Returns all the available resource types.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+  /scim/v2/Users:
+    get:
+      tags:
+        - SCIM
+      summary: List SCIM users
+      operationId: listScimUsers
+      description: |
+        List all SCIM users.
+
+        Current user must be of organization type.
+      parameters:
+        - $ref: '#/components/parameters/scim-count'
+        - $ref: '#/components/parameters/scim-start-index'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalResults:
+                    type: integer
+                    description: Total number of users in result
+                    example: 1
+                  itemsPerPage:
+                    type: integer
+                    description: Page size
+                    example: 10
+                  startIndex:
+                    type: integer
+                    description: Page number
+                    example: 1
+                  schemas:
+                    type: array
+                    description: List of schemas
+                    items:
+                      type: string
+                      description: The schema value
+                      example: 'urn:ietf:params:scim:api:messages:2.0:ListResponse'
+                  Resources:
+                    type: array
+                    description: List of users
+                    items:
+                      $ref: '#/components/schemas/scim-user'
+    post:
+      tags:
+        - SCIM
+      summary: Create SCIM user
+      operationId: createScimUser
+      description: |
+        Add a new SCIM user.
+
+        Current user must be of organization type.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - active
+                - emails
+                - externalId
+                - name
+                - schemas
+                - userName
+              properties:
+                active:
+                  type: boolean
+                  description: Active state of the user
+                  example: true
+                emails:
+                  type: array
+                  description: List of emails for the user
+                  items:
+                    type: object
+                    properties:
+                      value:
+                        type: string
+                        description: Value of the email address
+                        example: user_name@example.com
+                      primary:
+                        type: boolean
+                        description: Whether is the primary email address for the user
+                        example: true
+                      type:
+                        type: string
+                        description: Category of the email
+                        example: work
+                externalId:
+                  type: string
+                  description: Identifier of the original source where the user data is taken from
+                  example: user name
+                name:
+                  type: object
+                  description: Name object for the user
+                  properties:
+                    formatted:
+                      type: string
+                      description: Formatted representation of the user name
+                      example: user name
+                    familyName:
+                      type: string
+                      description: The family name of the user
+                      example: name
+                    givenName:
+                      type: string
+                      description: The given name of the user
+                      example: user
+                schemas:
+                  type: array
+                  description: List of schemas
+                  items:
+                    type: string
+                    description: The schema value
+                    example: 'urn:ietf:params:scim:schemas:core:2.0:User'
+                userName:
+                  type: string
+                  description: Human readable user name
+                  example: user_name@example.com
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scim-user'
+  '/scim/v2/Users/{user-id}':
+    get:
+      tags:
+        - SCIM
+      summary: Get SCIM user
+      operationId: getScimUser
+      description: |
+        Get a single SCIM user.
+
+        Current user must be of organization type.
+      parameters:
+        - $ref: '#/components/parameters/user-id'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scim-user'
+    put:
+      tags:
+        - SCIM
+      summary: Update SCIM user
+      operationId: updateScimUser
+      description: |
+        Update a SCIM user.
+
+        Current user must be of organization type.
+      parameters:
+        - $ref: '#/components/parameters/user-id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - emails
+                - externalId
+                - name
+                - schemas
+                - userName
+              properties:
+                active:
+                  type: string
+                  description: Active state of the user
+                  example: true
+                emails:
+                  type: array
+                  description: List of emails for the user
+                  items:
+                    type: object
+                    properties:
+                      value:
+                        type: string
+                        description: Value of the email address
+                        example: john_smith@example.com
+                      primary:
+                        type: boolean
+                        description: Whether is the primary email address for the user
+                        example: true
+                      type:
+                        type: string
+                        description: Category of the email
+                        example: work
+                externalId:
+                  type: string
+                  description: Identifier of the original source where the user data is taken from
+                  example: user name
+                name:
+                  type: object
+                  description: Name object for the user
+                  properties:
+                    formatted:
+                      type: string
+                      description: Formatted representation of the user name
+                      example: user name
+                    familyName:
+                      type: string
+                      description: The family name of the user
+                      example: Smith
+                    givenName:
+                      type: string
+                      description: The given name of the user
+                      example: John
+                schemas:
+                  type: array
+                  description: List of schemas
+                  items:
+                    type: string
+                    description: The schema value
+                    example: 'urn:ietf:params:scim:schemas:core:2.0:User'
+                userName:
+                  type: string
+                  description: Human readable user name
+                  example: john_smith@example.com
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scim-user'
+    delete:
+      tags:
+        - SCIM
+      summary: Delete SCIM user
+      operationId: deleteScimUser
+      description: |
+        Delete a SCIM user.
+
+        Current user must be of organization type.
+      parameters:
+        - $ref: '#/components/parameters/user-id'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scim-user'
   '/projects/{project-id}/teams':
     post:
       tags:
@@ -1735,7 +3382,7 @@ paths:
       summary: Create team
       operationId: createTeam
       description: |
-        Add a project team.
+        Add a new project team.
 
         The current user must be an administrator of the project.
       parameters:
@@ -1774,6 +3421,7 @@ paths:
         - Team
       summary: Get team
       operationId: getTeam
+      description: Get a single team.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/team-id'
@@ -1844,7 +3492,7 @@ paths:
         - Team
       summary: List members
       operationId: getTeamMembers
-      description: Lists the members of a team.
+      description: List all the members of a team.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/team-id'
@@ -1862,6 +3510,7 @@ paths:
         - Team
       summary: Add member
       operationId: createTeamMember
+      description: Add a new team member.
       parameters:
         - $ref: '#/components/parameters/project-id'
         - $ref: '#/components/parameters/team-id'
@@ -1902,6 +3551,394 @@ paths:
       responses:
         '204':
           $ref: '#/components/responses/204'
+  '/projects/{project-id}/issues/boards/{board-id}':
+    get:
+      tags:
+        - Topic Board
+      summary: Get topic board
+      operationId: getTopicBoard
+      description: Get a single topic board.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/topic-board-id'
+        - $ref: '#/components/parameters/topic-board-include'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/topic-board'
+    patch:
+      tags:
+        - Topic Board
+      summary: Update a topic board
+      operationId: updateTopicBoard
+      description: |
+        Update a topic board.
+
+        Only custom fields and custom field instances are supported.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/topic-board-id'
+        - $ref: '#/components/parameters/topic-board-include'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                customFieldsToAdd:
+                  type: array
+                  description: Custom fields to create.
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: 'A unique identifier for the custom field, represented as compacted UUID using 32 hexadecimal characters.'
+                        example: 324809076a694255b589d236517a55da
+                      required:
+                        type: boolean
+                        description: Whether the value of the instance is non nullable.
+                        example: false
+                      defaultValue:
+                        type: object
+                        description: 'Default value for the custom field instance, required if instance is non nullable.'
+                      disabled:
+                        type: boolean
+                        description: Whether the custom field instance is disabled.
+                        example: false
+                customFieldsToModify:
+                  type: array
+                  description: Custom fields to update.
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: 'A unique identifier for the custom field, represented as compacted UUID using 32 hexadecimal characters.'
+                        example: 324809076a694255b589d236517a55da
+                      required:
+                        type: boolean
+                        description: Whether the value of the instance is non nullable.
+                        example: false
+                      defaultValue:
+                        type: object
+                        description: 'Default value for the custom field instance, required if instance is non nullable.'
+                      disabled:
+                        type: boolean
+                        description: Whether the custom field instance is disabled.
+                        example: false
+                customFieldsToDisable:
+                  type: array
+                  description: Custom fields to disable.
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: 'Id of the custom field instance, represented as compacted UUID using 32 hexadecimal characters.'
+                        example: 324809076a694255b589d236517a55da
+                customFieldstoRestore:
+                  type: array
+                  description: Custom fields to restore.
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: 'Id of the custom field instance, represented as compacted UUID using 32 hexadecimal characters.'
+                        example: 324809076a694255b589d236517a55da
+                customFieldsToDelete:
+                  type: array
+                  description: Custom fields to delete.
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: 'Id of the custom field instance, represented as compacted UUID using 32 hexadecimal characters.'
+                        example: 324809076a694255b589d236517a55da
+                customFieldsToMove:
+                  type: array
+                  description: Custom fields to move.
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: 'Id of the custom field instance, represented as compacted UUID using 32 hexadecimal characters.'
+                        example: 324809076a694255b589d236517a55da
+                      itemBeforeId:
+                        type: string
+                        description: Id of the custom field instance that appears before the current one. Use null if the item should be the first one.
+                        nullable: true
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/topic-board'
+  /user:
+    get:
+      tags:
+        - User
+      summary: Get current user
+      operationId: getCurrentUser
+      description: Get the current user.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user'
+    put:
+      tags:
+        - User
+      summary: Update current user
+      operationId: updateCurrentUser
+      description: Update the current user.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 'Name of the user, limited to 128 characters.'
+                  example: User name
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user'
+  /user/starred_projects:
+    get:
+      tags:
+        - User
+      summary: List starred projects
+      operationId: getStarredProjects
+      description: List all starred projects for the current user.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/project'
+  '/projects/{project-id}/viewer2d/token':
+    post:
+      tags:
+        - Viewer
+      summary: Create 2D viewer token
+      operationId: createViewer2dToken
+      description: Get a 2D Viewer token to access viewer data.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                models:
+                  type: string
+                  description: Limit by model ids providing a comma separated list
+                  example: 5f61fc16dac34d4e8d450b35bce62cf4
+                revisions:
+                  type: string
+                  description: Limit by revision ids providing a comma separated list
+                  example: 28376aec8d04342dac4bf89cc9735ar4
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/viewer-2d-token'
+  '/projects/{project-id}/viewer3d/token':
+    post:
+      tags:
+        - Viewer
+      summary: Create 3D viewer token
+      operationId: createViewer3dToken
+      description: Get a 3D viewer token to access viewer data.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                models:
+                  type: string
+                  description: Limit by model ids providing a comma separated list
+                  example: 5f61fc16dac34d4e8d450b35bce62cf4
+                revisions:
+                  type: string
+                  description: Limit by revision ids providing a comma separated list
+                  example: 28376aec8d04342dac4bf89cc9735ar4
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/viewer-3d-token'
+  '/projects/{project-id}/webhooks/user':
+    get:
+      tags:
+        - Webhook
+      summary: List webhooks
+      operationId: getWebhooks
+      description: List all webhook subscriptions.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/webhook-subscription'
+    post:
+      tags:
+        - Webhook
+      summary: Create webhook
+      operationId: createWebhook
+      description: Add a new webhook subscription.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - event
+                - target_url
+              properties:
+                event:
+                  type: string
+                  description: |
+                    The event that triggers the callback URL.
+
+                    Valid values are: 
+                      - issue.created
+                      - issue.deleted
+                      - issue.modified
+                      - issue.status.changed
+                      - library.document.revision.published
+                      - model.created
+                      - revision.created
+                  example: issue.created
+                target_url:
+                  type: string
+                  description: The URL to be called when the event occurs
+                  example: 'https://hooks.zapier.com/hooks/catch/1028857/a8w0or/'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/webhook-subscription'
+  '/projects/{project-id}/webhooks/user/{webhook-id}':
+    get:
+      tags:
+        - Webhook
+      summary: Get webhook
+      operationId: getWebhook
+      description: Get a single webhook subscription.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/webhook-id'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/webhook-subscription'
+    put:
+      tags:
+        - Webhook
+      summary: Update webhook
+      operationId: updateWebhook
+      description: Update a webhook subscription.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/webhook-id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                event:
+                  type: string
+                  description: |
+                    The event that triggers the callback URL.
+
+                    Valid values are: 
+                      - issue.created
+                      - issue.deleted
+                      - issue.modified
+                      - issue.status.changed
+                      - library.document.revision.published
+                      - model.created
+                      - revision.created
+                  example: issue.created
+                state:
+                  type: string
+                  description: |
+                    The state of the Webhook.
+
+                    Valid values are:
+                      - ENABLED
+                      - DISABLED_BY_USER
+                target_url:
+                  type: string
+                  description: The URL to be called when the event occurs
+                  example: 'https://hooks.zapier.com/hooks/catch/1028857/a8w0or/'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/label'
+    delete:
+      tags:
+        - Webhook
+      summary: Delete webhook
+      operationId: deleteWebhook
+      description: Delete a webhook subscription.
+      parameters:
+        - $ref: '#/components/parameters/project-id'
+        - $ref: '#/components/parameters/webhook-id'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/webhook-subscription'
 components:
   parameters:
     classification-id:
@@ -1920,6 +3957,20 @@ components:
       schema:
         type: integer
         format: int64
+    collection-id:
+      name: collection-id
+      in: path
+      required: true
+      description: Id of the document library item collection
+      schema:
+        type: string
+    custom-field-id:
+      name: custom-field-id
+      in: path
+      required: true
+      description: Id of the custom field
+      schema:
+        type: string
     group-id:
       name: object-id
       in: path
@@ -1932,14 +3983,14 @@ components:
       name: label-group-id
       in: path
       required: true
-      description: Id of label group
+      description: Id of the label group
       schema:
         type: string
     label-id:
       name: label-id
       in: path
       required: true
-      description: Id of label
+      description: Id of the label
       schema:
         type: string
     layer-id:
@@ -1950,6 +4001,27 @@ components:
       schema:
         type: integer
         format: int64
+    library-id:
+      name: library-id
+      in: path
+      required: true
+      description: Id of the library
+      schema:
+        type: string
+    library-item-id:
+      name: library-item-id
+      in: path
+      required: true
+      description: Id of the library item
+      schema:
+        type: string
+    library-item-revision-id:
+      name: library-item-revision-id
+      in: path
+      required: true
+      description: Id of the library item revision
+      schema:
+        type: string
     model-id:
       name: model-id
       in: path
@@ -2001,11 +4073,26 @@ components:
       description: Id of the project
       schema:
         type: string
+    schema-uri:
+      name: schema-uri
+      in: path
+      required: true
+      description: Schema uri
+      schema:
+        type: string
+        example: 'urn:ietf:params:scim:schemas:core:2.0:User'
     team-id:
       name: team-id
       in: path
       required: true
       description: Id of the team
+      schema:
+        type: string
+    topic-board-id:
+      name: board-id
+      in: path
+      required: true
+      description: Id of the topic board
       schema:
         type: string
     type-id:
@@ -2021,6 +4108,85 @@ components:
       in: path
       required: true
       description: Id of the user
+      schema:
+        type: string
+    webhook-id:
+      name: webhook-id
+      in: path
+      required: true
+      description: Id of the webhook
+      schema:
+        type: string
+    collection-created-by:
+      name: createdBy
+      in: query
+      description: Limit result to only contain collections created by the specified users. Provide a comma separated list of user ids.
+      schema:
+        type: string
+    collection-fields:
+      name: fields
+      in: query
+      description: Specify which fields to include in the response. Provide a comma separated list of valid values. Valid values are **id**.
+      schema:
+        type: string
+    collection-files:
+      name: files
+      in: query
+      description: Limit result to only contain collections containing the specified library item revisions. Provide a comma separated list of library item revision ids.
+      schema:
+        type: string
+    collection-finalized:
+      name: finalized
+      in: query
+      description: Limit result to only contain finalized collections.
+      schema:
+        type: boolean
+    collection-follow-latest-revision:
+      name: followLatestRevision
+      in: query
+      description: Limit result to only contain collections that follow the latest revision of all items.
+      schema:
+        type: boolean
+    collection-followers:
+      name: followers
+      in: query
+      description: Limit result to only contain collections followed by the specified users. Provide a comma separated list of user ids.
+      schema:
+        type: string
+    collection-include:
+      name: include
+      in: query
+      description: Specify which additional fields to include in the response. Provide a comma separated list of valid values. Valid values are **libraryItem**.
+      schema:
+        type: string
+    collection-library-item-include:
+      name: libraryItemInclude
+      in: query
+      description: Specify which additional library item fields to include in the response. Combine with include parameter and provide a comma separated list of valid values. Valid values are **path**.
+      schema:
+        type: string
+    collection-library-items:
+      name: libraryItems
+      in: query
+      description: Limit result to only contain collections containing the specified library items. Provide a comma separated list of library item ids.
+      schema:
+        type: string
+    collection-search:
+      name: search
+      in: query
+      description: Limit result to only contain collections with names that match the search term.
+      schema:
+        type: string
+    collection-shared-by:
+      name: sharedBy
+      in: query
+      description: 'Limit result to only contain collections with the specified shared methods. Provide a comma separated list of valid values. Valid values are **link**, **email** or **not-shared**.'
+      schema:
+        type: string
+    collection-visibility:
+      name: visibility
+      in: query
+      description: Limit result to only contain collections with the specified visibility. Provide a comma separated list of valid values. Valid values are **private** or **project-members**.
       schema:
         type: string
     ifc-model:
@@ -2064,6 +4230,98 @@ components:
         Use value `group` to include associated label group in the result
       schema:
         type: string
+    library-item-associations:
+      name: associations
+      in: query
+      description: Limit result to only contain library items linked to the specified IFC guids. Provide a comma separated list of IFC guids.
+      schema:
+        type: string
+    library-item-created-at-from:
+      name: createdAtFrom
+      in: query
+      description: |
+        Filter the result by providing a date in ISO 8601 format.
+
+        Result will only contain items created after this date.
+      schema:
+        type: string
+    library-item-created-at-to:
+      name: createdAtTo
+      in: query
+      description: |
+        Filter the result by providing a date in ISO 8601 format.
+
+        Result will only contain items created before this date.
+      schema:
+        type: string
+    library-item-format:
+      name: format
+      in: query
+      description: Optionally specify an alternative format when download a library item.
+      schema:
+        type: string
+    library-item-include:
+      name: include
+      in: query
+      description: |
+        Comma separated list of referenced properties that will be added to the items of the result. Valid values are **labels**, **labelGroups** and **path**.
+      schema:
+        type: string
+    library-item-labels:
+      name: labels
+      in: query
+      description: Filter the result by providing a comma separated list of label ids.
+      schema:
+        type: string
+    library-item-parent-id:
+      name: parentId
+      in: query
+      description: |
+        Parent item of the library items, represented as compacted UUID using 32 hexadecimal characters. Setting this will only list the items with this parentId, to specify the root items, set parentId to **root**.
+      schema:
+        type: string
+    library-item-published-at-from:
+      name: publishedAtFrom
+      in: query
+      description: |
+        Filter the result by providing a date in ISO 8601 format.
+
+        Result will only contain items with the last revision being published after this date.
+      schema:
+        type: string
+    library-item-published-at-to:
+      name: publishedAtTo
+      in: query
+      description: |
+        Filter the result by providing a date in ISO 8601 format.
+
+        Result will only contain items with the last revision being published before this date.
+      schema:
+        type: string
+    library-item-search:
+      name: search
+      in: query
+      description: Filter the result by search text.
+      schema:
+        type: string
+    library-item-sub-folders:
+      name: subFolders
+      in: query
+      description: 'Include library items within folders in result, recursive search.'
+      schema:
+        type: boolean
+    library-page:
+      name: page
+      in: query
+      description: Default value is 1
+      schema:
+        type: integer
+    library-page-size:
+      name: pageSize
+      in: query
+      description: 'Default 100, max 1000'
+      schema:
+        type: integer
     model-normalize:
       name: normalize
       in: query
@@ -2083,10 +4341,196 @@ components:
       description: Filter by the object id of an IFC product
       schema:
         type: string
+    scim-count:
+      name: count
+      in: query
+      description: 'Page size, default value is 100'
+      schema:
+        type: integer
+    scim-start-index:
+      name: startIndex
+      in: query
+      description: 'Page number, default value is 1'
+      schema:
+        type: integer
+    topic-board-include:
+      name: include
+      in: query
+      description: Comma separated list of referenced properties that will be added to the result. Valid values are **customFields**.
+      schema:
+        type: string
   responses:
     '204':
       description: No Content
   schemas:
+    collection:
+      type: object
+      properties:
+        id:
+          type: string
+          description: 'Id of the collection, represented as compacted UUID using 32 hexadecimal characters.'
+          example: 924809076a694255b589d236517a55da
+        name:
+          type: string
+          description: The name of the collection.
+          example: Collection name
+        description:
+          type: string
+          description: The description of the collection.
+          example: Collection description
+        finalized:
+          type: boolean
+          description: |
+            Indicates whether the collection is finalized.
+
+            Finalized collections can no longer be edited.
+          example: false
+        followLatestRevision:
+          type: boolean
+          description: Determines whether collection items follow the latest revision of a library item or the revision when added to the collection.
+          example: true
+        visibility:
+          type: string
+          description: |
+            Determines whether the collection is available to all project members.
+
+            By default a collection becomes available to project members when it is finalized.
+
+            Valid values are:
+              - private
+              - project-members
+        createdAt:
+          type: string
+          description: The date and time the collection was created in ISO 8601 format.
+          example: 2023-12-09T10:07:56.000Z
+        createdBy:
+          type: string
+          description: The user id of the user who created the collection.
+          example: 524809076a694255b989d236517a55da
+    collection-item:
+      type: object
+      properties:
+        id:
+          type: string
+          description: 'Id of the collection item, represented as compacted UUID using 32 hexadecimal characters.'
+          example: 924809076a694255b589d236517a55da
+        libraryId:
+          type: string
+          description: The library id of the library item.
+          example: ead9b194e6024e6b92cae1d791797b68
+        libraryItemId:
+          type: string
+          description: Id of the library item.
+          example: 5badf33213ae420ebf81e727d5281850
+        fileId:
+          type: string
+          description: Id of the library item revision.
+          example: 5dc75452-29a4-4c4a-8415-991b92a92001
+        createdAt:
+          type: string
+          description: The date and time the collection was created in ISO 8601 format.
+          example: 2023-12-09T10:07:56.000Z
+        createdBy:
+          type: string
+          description: The user id of the user who created the collection.
+          example: 524809076a694255b989d236517a55da
+    custom-field:
+      type: object
+      description: Represents a single custom field.
+      properties:
+        id:
+          type: string
+          description: 'Id of the custom field, represented as compacted UUID using 32 hexadecimal characters.'
+          example: 324409076a694255b589d236517a55da
+        name:
+          type: string
+          description: The name of the custom field.
+          example: Custom field name
+        description:
+          type: string
+          description: Description of the custom field.
+          example: Custom field description
+        type:
+          type: string
+          description: 'Type of the custom field. Valid values are **text**, **integer**, **double**, or **enumeration**.'
+          example: text
+        createdAt:
+          type: string
+          description: The date and time the custom field was created in ISO 8601 format.
+          example: 2023-03-06T11:52:45.000Z
+        createdBy:
+          type: string
+          description: Id of the user that created the custom field.
+          example: 624809076a694255b989d236517a55da
+        archived:
+          type: boolean
+          description: Whether the custom field is archived.
+          example: false
+        dropdownItems:
+          type: array
+          description: List of dropdown items for custom fields of type enumeration. Value is null for other custom field types.
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: 'Id of the custom field, represented as compacted UUID using 32 hexadecimal characters.'
+              name:
+                type: string
+                description: Name of the dropdown item
+                example: Dropdown item 1
+              code:
+                type: string
+                description: 'The code of the enumeration item, value is unique for a custom field.'
+                example: Item name
+              disabled:
+                type: boolean
+                description: Whether the enumeration item is disabled.
+                example: false
+          nullable: true
+    custom-field-enumeration:
+      type: object
+      description: Represents a single custom field enumeration item.
+      properties:
+        id:
+          type: string
+          description: 'Id of the enumeration item, represented as compacted UUID using 32 hexadecimal characters.'
+          example: 324409076a694255b589d236517a55da
+        name:
+          type: string
+          description: The name of the enumeration item.
+          example: Custom field name
+        code:
+          type: string
+          description: 'The code of the enumeration item, value is unique for a custom field.'
+          example: Item name
+        disabled:
+          type: boolean
+          description: Whether the enumeration item is disabled.
+          example: false
+    custom-field-instance:
+      type: object
+      description: Represents a single custom field.
+      properties:
+        id:
+          type: string
+          description: 'Id of the custom field, represented as compacted UUID using 32 hexadecimal characters.'
+          example: 324809076a694255b589d236517a55da
+        disabled:
+          type: boolean
+          description: Whether the instance is disabled.
+          example: false
+        required:
+          type: boolean
+          description: Whether the value of the instance is non nullable.
+          example: false
+        defaultValue:
+          type: object
+          description: 'Default value for the custom field instance, required if instance is non nullable.'
+        itemBeforeId:
+          type: string
+          description: Id of the custom field that appears before the current one. Use null if the item should be the first one.
+          nullable: true
     error:
       type: object
       properties:
@@ -2096,6 +4540,38 @@ components:
         message:
           type: string
           description: The error message
+    file:
+      type: object
+      properties:
+        type:
+          type: string
+          description: Value is file
+          example: file
+        createdAt:
+          type: string
+          description: The date and time the file was created in ISO 8601 format
+          example: 2023-12-09T10:07:56.000Z
+        owner:
+          type: string
+          description: User id of the file owner
+          example: gh7fe246cea6442834052404eth08drj
+        revision:
+          $ref: '#/components/schemas/library-item-document-file-revision'
+    folder:
+      type: object
+      properties:
+        type:
+          type: string
+          description: Value is folder
+          example: folder
+        createdAt:
+          type: string
+          description: The date and time the folder was created in ISO 8601 format
+          example: 2023-12-09T10:07:56.000Z
+        owner:
+          type: string
+          description: User id of the folder owner
+          example: gh7fe246cea6442834052404eth08drj
     ifc-attributes:
       type: object
       description: 'Set of named explicit attribute values, unset attributes are omitted'
@@ -2359,6 +4835,337 @@ components:
           type: boolean
           description: Soft deletion state of the label
           example: false
+    library:
+      type: object
+      description: |
+        A library represents an object collection.
+
+        Types of libraries that are supported contain either documents, links, embedded values or classifications.
+      properties:
+        id:
+          type: string
+          description: 'A unique identifier for a library, represented as compacted UUID using 32 hexadecimal characters'
+          example: 954803076a694255b959d236517b55da
+        name:
+          type: string
+          description: 'The name of the library, limited to 256 characters'
+          example: Library Name
+        type:
+          type: string
+          description: 'The type of the library, valid values are **document**, **link**, **embedded_value** or **classification**'
+          example: document
+        createdBy:
+          $ref: '#/components/schemas/user'
+    library-item-association:
+      type: object
+      properties:
+        globalId:
+          type: string
+          description: A 22 character IfcGloballyUniqueId.
+          example: 2_TmT90tD0x9tJSTsyTb1J
+        createdAt:
+          type: string
+          description: The date and time the association was created.
+          example: '2023-12-09T10:07:56Z'
+        user:
+          $ref: '#/components/schemas/user'
+    library-item-classification:
+      type: object
+      properties:
+        id:
+          type: string
+          description: 'A unique identifier for a library item, represented as compacted UUID using 32 hexadecimal characters.'
+          example: tttbe1ce36ce4b4c37f7060c76d241e7
+        libraryId:
+          type: string
+          description: Id of the library that the item belongs to
+          example: 9f71c88b7d7942ffa316c7a450c89358
+        name:
+          type: string
+          description: The name of the library item
+          example: Library item 1
+        type:
+          type: string
+          description: 'Type of the library item, valid values are **embedded_value**'
+          example: embedded_value
+        parentId:
+          type: string
+          description: |
+            A unique identifier for the parent of the library item. 
+
+            Represented as compacted UUID using 32 hexadecimal characters.
+
+            If no parent is present, the value is null.
+          example: 502b06247f744b7492fd1a44e386f21e
+          nullable: true
+        classification:
+          type: object
+          properties:
+            identification:
+              type: string
+              description: Identification of the classification
+              example: A1
+            description:
+              type: string
+              description: Description of the classification
+              example: Classification description
+        deleted:
+          type: boolean
+          description: Deletion status of the library item
+          example: false
+    library-item-classification-create:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the library item
+          example: Library item 1
+        type:
+          type: string
+          description: 'Type of the library item, valid values are **classification**'
+          example: classification
+        parentId:
+          type: string
+          description: |
+            A unique identifier for the parent of the library item. 
+
+            Represented as compacted UUID using 32 hexadecimal characters.
+
+            If no parent is present, the value is null.
+          example: 502b06247f744b7492fd1a44e386f21e
+          nullable: true
+        classification:
+          type: object
+          properties:
+            identification:
+              type: string
+              description: Identification of the classification
+              example: A1
+            description:
+              type: string
+              description: Description of the classification
+              example: Classification description
+    library-item-document:
+      type: object
+      properties:
+        id:
+          type: string
+          description: 'A unique identifier for a library item, represented as compacted UUID using 32 hexadecimal characters.'
+          example: tttbe1ce36ce4b4c37f7060c76d241e7
+        libraryId:
+          type: string
+          description: Id of the library that the item belongs to
+          example: 9f71c88b7d7942ffa316c7a450c89358
+        name:
+          type: string
+          description: The name of the library item
+          example: Library item 1
+        type:
+          type: string
+          description: |
+            Type of the document library item, valid values are:
+              - document
+              - folder
+          example: document
+        parentId:
+          type: string
+          description: |
+            A unique identifier for the parent of the library item. 
+
+            Represented as compacted UUID using 32 hexadecimal characters.
+
+            If no parent is present, the value is null.
+          example: 502b06247f744b7492fd1a44e386f21e
+          nullable: true
+        document:
+          oneOf:
+            - $ref: '#/components/schemas/file'
+            - $ref: '#/components/schemas/folder'
+        deleted:
+          type: boolean
+          description: Deletion status of the library item
+          example: false
+    library-item-document-create:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the folder
+          example: Folder name 1
+        type:
+          type: string
+          description: 'The type of document, value should be set to "folder"'
+          example: folder
+        parentId:
+          type: string
+          description: |
+            A unique identifier for the parent of the library item. 
+
+            Represented as compacted UUID using 32 hexadecimal characters.
+
+            If no parent is present, the value is null.
+          example: 502b06247f744b7492fd1a44e386f21e
+          nullable: true
+        document:
+          properties:
+            type:
+              type: string
+              description: Value is folder
+              example: folder
+    library-item-document-file-revision:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Id of the revision
+          example: h4c21c0e89774c8e92f42959c73561yh
+        parentId:
+          type: string
+          description: |
+            A unique identifier for the parent of the library item. 
+
+            Represented as compacted UUID using 32 hexadecimal characters.
+
+            If no parent is present, the value is null.
+          nullable: true
+        version:
+          type: number
+          description: Version of the revision
+          example: 9
+        name:
+          type: string
+          description: File name of the revision
+          example: File.txt
+        createdAt:
+          type: string
+          description: The date and time the revision was created in ISO 8601 format
+          example: 2023-03-01T11:52:45.000Z
+        size:
+          type: number
+          description: Size of the file in bytes
+          example: 3745
+        createdBy:
+          $ref: '#/components/schemas/user'
+        additionalFormats:
+          type: array
+          description: Additional formats available for the file revision
+          items:
+            type: object
+            properties:
+              size:
+                type: number
+                description: Size of the file in bytes
+                example: 7147
+              mediaType:
+                type: string
+                description: Media type of the additional format file
+                example: application/xod
+        downloadFileName:
+          type: string
+          description: Filename on disk
+          example: File-1.txt
+    library-item-document-token:
+      type: object
+      properties:
+        token:
+          type: string
+          description: 'The token value, valid for one hour.'
+          example: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpdGVtLWlkIjoiZTc3NjU5YjliZTQzNDhkZDg1NjZiMWU3YmIwYmZkZjgiLCJsaWJyYXJ5LWlkIjoiNzZhZDFhYThjNmNiNDE1YTgxZTE0ZGVkNGU2M2Y3ZmUiLCJ1c2VyLWlkIjoiMjU1NGJiZDctMDkxZC00ZWVjLWIzMTMtOTI5OGZlNDE4YjQ5IiwidHlwZSI6ImxpYnJhcnktaXRlbSIsInByb2plY3QtaWQiOiIyYTA4OGJjZC0wOGZhLTQzOGEtODI1MS0yZDkxYjlhNTk3YTIiLCJjbGllbnQtaWQiOiI1bVBESFh6NFNJRHJ3VmYiLCJleHAiOjF3MTM5NzQ3NDF9.MJ67ENsOItZJybEYt7Yjes7AkWRuUXrT8_eWvQk5w98
+        url:
+          type: string
+          description: A time limited URL to download the document.
+          example: 'https://api.catenda.com/v2/download?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpdGVtLWlkIjoiZTc3NjU5YjliZTQzNDhkZDg1NjZiMWU3YmIwYmZkZjgiLCJsaWJyYXJ5LWlkIjoiNzZhZDFhYThjNkNiNDE1YTgxZTE0ZGVkNGU2M2Y3ZmUiLCJ1c2VyLWlkIjoiMjU1NGJiZDctMDkxZC00ZWVjLWIzMTMtOTI5OGZlNDE4YjQ5IiwidHlwZSI6ImxpYnJhcnktaXRlbSIsInByb2plY3QtaWQiOiIyYTA4OGJjZC0wOGZhLTQzOGEtODI1MS0yZDkxYjlhNTk3YTIiLCJjbGllbnQtaWQiOiI1bVBESFh6NFNJRHJ3VmYiLCJleHAiOjE3MTM5NzQ3NDF9.MJ67ENsOItZJybEYt7Yjes7AkWRuUXrT8_eWvQk5w98'
+    library-item-embedded_value:
+      type: object
+      properties:
+        id:
+          type: string
+          description: 'A unique identifier for a library item, represented as compacted UUID using 32 hexadecimal characters.'
+          example: tttbe1ce36ce4b4c37f7060c76d241e7
+        libraryId:
+          type: string
+          description: Id of the library that the item belongs to
+          example: 9f71c88b7d7942ffa316c7a450c89358
+        name:
+          type: string
+          description: The name of the library item
+          example: Library item 1
+        type:
+          type: string
+          description: 'Type of the library item, valid values are **embedded_value**'
+          example: embedded_value
+        parentId:
+          type: string
+          description: |
+            A unique identifier for the parent of the library item. 
+
+            Represented as compacted UUID using 32 hexadecimal characters.
+
+            If no parent is present, the value is null.
+          example: 502b06247f744b7492fd1a44e386f21e
+          nullable: true
+        deleted:
+          type: boolean
+          description: Deletion status of the library item
+          example: false
+    library-item-link:
+      type: object
+      properties:
+        id:
+          type: string
+          description: 'A unique identifier for a library item, represented as compacted UUID using 32 hexadecimal characters.'
+          example: tttbe1ce36ce4b4c37f7060c76d241e7
+        libraryId:
+          type: string
+          description: Id of the library that the item belongs to
+          example: 9f71c88b7d7942ffa316c7a450c89358
+        name:
+          type: string
+          description: The name of the library item
+          example: Library item 1
+        type:
+          type: string
+          description: 'Type of the library item, valid values are **link**'
+          example: link
+        parentId:
+          type: string
+          description: |
+            A unique identifier for the parent of the library item. 
+
+            Represented as compacted UUID using 32 hexadecimal characters.
+
+            If no parent is present, the value is null.
+          example: 502b06247f744b7492fd1a44e386f21e
+          nullable: true
+        link:
+          type: object
+          properties:
+            url:
+              type: string
+              description: The URL of the link
+              example: 'https://www.example.com'
+        deleted:
+          type: boolean
+          description: Deletion status of the library item
+          example: false
+    library-item-link-create:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the library item
+          example: Library item 1
+        type:
+          type: string
+          description: 'Type of the library item, valid values are **link**'
+          example: link
+        link:
+          type: object
+          properties:
+            url:
+              type: string
+              description: The URL of the link
+              example: 'https://www.example.com'
     member:
       type: object
       properties:
@@ -2399,7 +5206,7 @@ components:
               example: 0
             status:
               type: string
-              description: 'Valid values are ''waiting'', ''processing'', ''success'' or ''failure'''
+              description: 'Valid values are **waiting**, **processing**, **success** or **failure**'
               example: waiting
             error:
               $ref: '#/components/schemas/error'
@@ -2494,6 +5301,115 @@ components:
           type: string
           description: The date and time of the last change to the project in ISO 8601 format
           example: 2016-09-26T14:45:40.000Z
+    scim-user:
+      type: object
+      properties:
+        active:
+          type: string
+          description: Active state of the user
+          example: true
+        schemas:
+          type: array
+          description: List of schemas
+          items:
+            type: string
+            description: The schema value
+            example: 'urn:ietf:params:scim:schemas:core:2.0:User'
+        id:
+          type: string
+          description: 'A unique identifier for the user, represented as compacted UUID using 32 hexadecimal characters'
+          example: 2819c223-7f76-453a-919d-413861904646
+        meta:
+          type: object
+          description: Meta object for the user
+          properties:
+            resourceType:
+              type: string
+              description: Resource type
+              example: User
+            created:
+              type: string
+              description: The date and time the user was created in ISO 8601 format
+              example: '2011-08-01T18:29:49.793Z'
+            lastModified:
+              type: string
+              description: The date and time the user was last modified in ISO 8601 format
+              example: '2011-08-01T18:29:49.793Z'
+            location:
+              type: string
+              description: The location of the user
+              example: 'https://example.com/v2/Users/2819c223-7f76-453a-919d-413861904646'
+            version:
+              type: string
+              description: The version of the user
+              example: W\/\"f250dd84f0671c3\"
+        userName:
+          type: string
+          description: Human readable user name
+          example: john_smith@example.com
+        externalId:
+          type: string
+          description: Identifier of the original source where the user data is taken from
+          example: john_smith
+        name:
+          type: object
+          description: Name object for the user
+          properties:
+            formatted:
+              type: string
+              description: Formatted representation of the user name
+              example: JohnSmith
+            familyName:
+              type: string
+              description: The family name of the user
+              example: Smith
+            givenName:
+              type: string
+              description: The given name of the user
+              example: John
+        emails:
+          type: array
+          description: List of emails for the user
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: Value of the email address
+                example: john_smith@example.com
+              primary:
+                type: boolean
+                description: Whether is the primary email address for the user
+                example: true
+              type:
+                type: string
+                description: Category of the email
+                example: work
+    topic-board:
+      type: object
+      properties:
+        id:
+          type: string
+          description: 'Id of a topic board, represented as compacted UUID using 32 hexadecimal characters.'
+          example: 324404076a694255b589d236517a55da
+        name:
+          type: string
+          description: Name of the topic board.
+          example: Board name
+        description:
+          type: string
+          description: Description of the topic board.
+          example: Topic board description
+        customFields:
+          type: array
+          description: List of custom fields.
+          items:
+            $ref: '#/components/schemas/custom-field'
+        customFieldInstances:
+          type: array
+          description: List of custom fields currently configured in the topic board.
+          items:
+            $ref: '#/components/schemas/custom-field-instance'
     user:
       type: object
       description: |
@@ -2505,14 +5421,6 @@ components:
 
         A Team represents a group of users within a project. Teams do not have a username and cannot sign in to Catenda.
       properties:
-        avatarUrl:
-          type: string
-          description: The URL for the user avatar
-          example: 'https://api.catenda.com/v2/avatar/397t0ccd8f74516096c738de15dc6512'
-        createdAt:
-          type: string
-          description: The date and time the user was created in ISO 8601 format
-          example: 2016-09-20T14:55:22.000Z
         id:
           type: string
           description: Represented as compacted UUID using 32 hexadecimal characters
@@ -2532,6 +5440,19 @@ components:
 
             Limited to 50 characters.
           example: john@doe.com
+          nullable: true
+        email:
+          type: string
+          description: Email address of the User
+          example: john@doe.com
+        createdAt:
+          type: string
+          description: The date and time the user was created in ISO 8601 format
+          example: 2016-09-20T14:55:22.000Z
+        avatarUrl:
+          type: string
+          description: The URL for the user avatar
+          example: 'https://api.catenda.com/v2/avatar/397t0ccd8f74516096c738de15dc6512'
         type:
           type: string
           description: |
@@ -2540,8 +5461,90 @@ components:
               - organization
               - team
           example: user
+    viewer-2d-token:
+      type: object
+      description: 'Represents a time limited access token to grant access to viewer data, valid for one hour.'
+      properties:
+        revisions:
+          type: array
+          description: The set of revisions the token grants access to
+          items:
+            $ref: '#/components/schemas/model-revision'
+        token:
+          type: string
+          description: 'The token value, valid for one hour.'
+          example: ba16ee5e36054019917210c4559bcca0
+        url:
+          type: string
+          description: URL used to load models within a viewer instance
+          example: 'https://api.catenda.com/v2/projects/1a099bcd08da438a82512d45b9a534a2/viewer2d/geometry?token=ba16ee5e36054019917210c4559bcca0'
+    viewer-3d-token:
+      type: object
+      description: 'Represents a time limited access token to grant access to viewer data, valid for one hour.'
+      properties:
+        revisions:
+          type: array
+          description: The set of revisions the token grants access to
+          items:
+            $ref: '#/components/schemas/model-revision'
+        token:
+          type: string
+          description: 'The token value, valid for one hour.'
+          example: ba16ee5e36054019917210c4559bcca0
+        url:
+          type: string
+          description: URL used to load models within a viewer instance
+          example: 'https://api.catenda.com/v2/projects/1a099bcd08da438a82512d45b9a534a2/viewer3d/data?token=ba16ee5e36054019917210c4559bcca0'
+    webhook-subscription:
+      type: object
+      description: Represents the subscription to an event with an associated callback.
+      properties:
+        id:
+          type: string
+          description: 'A unique identifier for a Webhook, represented as compacted UUID using 32 hexadecimal characters'
+          example: 57d5457e09d64380af75da94ed96557h
+        target_url:
+          type: string
+          description: The URL to be called when the event occurs
+          example: 'https://hooks.zapier.com/hooks/catch/1028857/a8w0or/'
+        createdAt:
+          type: string
+          description: Creation date of the Webhook
+          example: '2019-02-13T14:15:18Z"'
+        state:
+          type: string
+          description: |
+            The state of the Webhook.
+
+            Valid values are: 
+              - ENABLED
+              - DISABLED_GONE
+              - DISABLED_TOO_MANY_FAILURES
+              - DISABLED_BY_USER
+        failureCount:
+          type: number
+          description: The number of times the Webhook has failed
+          example: 0
+        event:
+          type: string
+          description: |
+            The event that triggers the callback URL.
+
+            Valid values are: 
+              - issue.created
+              - issue.deleted
+              - issue.modified
+              - issue.status.changed
+              - library.document.revision.published
+              - model.created
+              - revision.created
+          example: issue.created
   securitySchemes:
-    Bearer:
-      type: http
-      scheme: bearer
-      bearerFormat: AccessToken
+    OAuth:
+      type: oauth2
+      description: This API uses OAuth 2
+      flows:
+        authorizationCode:
+          authorizationUrl: 'https://api.catenda.com/oauth2/authorize?redirect_uri=https://eo8vs2d9uj5gugx.m.pipedream.net'
+          tokenUrl: 'https://api.catenda.com/oauth2/token'
+          refreshUrl: 'https://api.catenda.com/oauth2/token'
