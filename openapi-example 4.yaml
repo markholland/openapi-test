@@ -1,0 +1,38 @@
+openapi: 3.0.0
+info:
+  title: Sample API
+  description: Optional multiline or single-line description in [CommonMark](http://commonmark.org/help/) or HTML.
+  version: 1.0.0
+servers:
+  - url: https://api.example.com/v1
+    description: Optional server description, e.g. Main (production) server
+security:
+  - Bearer: []
+paths:
+  /item:
+    get: 
+      summary: Get all items.
+      operationId: getItems
+      description: Returns all the items.
+      responses: 
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/item"
+components:
+  schemas:
+    item:
+      type: object
+      additionalProperties:
+        type: string
+      example: {
+        "Object1": "String value 1",
+        "Object2": "String value 2"
+      }
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: AccessToken
